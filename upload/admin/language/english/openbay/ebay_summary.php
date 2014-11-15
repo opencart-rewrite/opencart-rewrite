@@ -23,5 +23,5 @@ $_['text_failed']               = 'Failed to load';
 $_['text_summary']              = 'View your eBay summary';
 
 // Error
-$_['error_validation']     		= 'You need to register for your API token and enable the module.';
-$_['error_ajax_load']      		= 'Sorry, connection to the server failed';
+$_['error_validation']             = 'You need to register for your API token and enable the module.';
+$_['error_ajax_load']              = 'Sorry, connection to the server failed';

@@ -1,18 +1,18 @@
 <?php
 // Heading
-$_['heading_title']   			= 'Bulk order update';
+$_['heading_title']               = 'Bulk order update';
 $_['text_openbay']              = 'OpenBay Pro';
 $_['text_confirm_title']        = 'Review bulk status update';
 
 // Button
-$_['button_status']           	= 'Change status';
-$_['button_update']           	= 'Update';
+$_['button_status']               = 'Change status';
+$_['button_update']               = 'Update';
 
 // Column
-$_['column_channel']        	= 'Order Channel';
-$_['column_additional']     	= 'Additional info';
-$_['column_comments']      		= 'Comments';
-$_['column_notify']        		= 'Notify';
+$_['column_channel']            = 'Order Channel';
+$_['column_additional']         = 'Additional info';
+$_['column_comments']              = 'Comments';
+$_['column_notify']                = 'Notify';
 
 // Text
 $_['text_confirmed']            = '%s orders have been marked %t';
@@ -24,8 +24,8 @@ $_['text_web']                  = 'Web';
 $_['text_ebay']                 = 'eBay';
 $_['text_amazon']               = 'Amazon EU';
 $_['text_amazonus']             = 'Amazon US';
-$_['text_etsy']             	= 'Etsy';
-$_['text_list']					= 'Order list';
+$_['text_etsy']                 = 'Etsy';
+$_['text_list']                    = 'Order list';
 
 // Entry
 $_['entry_carrier']             = 'Carrier';

@@ -55,17 +55,17 @@ $registry->set('session', $session);
 $upgrade = false;
 
 if (file_exists('../config.php')) {
-	if (filesize('../config.php') > 0) {
-		$upgrade = true;
+    if (filesize('../config.php') > 0) {
+        $upgrade = true;
 
-		$lines = file(DIR_OPENCART . 'config.php');
+        $lines = file(DIR_OPENCART . 'config.php');
 
-		foreach ($lines as $line) {
-			if (strpos(strtoupper($line), 'DB_') !== false) {
-				eval($line);
-			}
-		}
-	}
+        foreach ($lines as $line) {
+            if (strpos(strtoupper($line), 'DB_') !== false) {
+                eval($line);
+            }
+        }
+    }
 }
 
 // Front Controller
@@ -73,11 +73,11 @@ $controller = new Front($registry);
 
 // Router
 if (isset($request->get['route'])) {
-	$action = new Action($request->get['route']);
+    $action = new Action($request->get['route']);
 } elseif ($upgrade) {
-	$action = new Action('upgrade');
+    $action = new Action('upgrade');
 } else {
-	$action = new Action('step_1');
+    $action = new Action('step_1');
 }
 
 // Dispatch

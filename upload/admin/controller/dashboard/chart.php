@@ -1,123 +1,123 @@
 <?php
 class ControllerDashboardChart extends Controller {
-	public function index() {
-		$this->load->language('dashboard/chart');
+    public function index() {
+        $this->load->language('dashboard/chart');
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_day'] = $this->language->get('text_day');
-		$data['text_week'] = $this->language->get('text_week');
-		$data['text_month'] = $this->language->get('text_month');
-		$data['text_year'] = $this->language->get('text_year');
-		$data['text_view'] = $this->language->get('text_view');
+        $data['heading_title'] = $this->language->get('heading_title');
 
-		$data['token'] = $this->session->data['token'];
+        $data['text_day'] = $this->language->get('text_day');
+        $data['text_week'] = $this->language->get('text_week');
+        $data['text_month'] = $this->language->get('text_month');
+        $data['text_year'] = $this->language->get('text_year');
+        $data['text_view'] = $this->language->get('text_view');
 
-		return $this->load->view('dashboard/chart.tpl', $data);
-	}
-	
-	public function chart() {
-		$this->load->language('dashboard/chart');
+        $data['token'] = $this->session->data['token'];
 
-		$json = array();
-		
-		$this->load->model('report/sale');
-		$this->load->model('report/customer');
+        return $this->load->view('dashboard/chart.tpl', $data);
+    }
 
-		$json['order'] = array();
-		$json['customer'] = array();
-		$json['xaxis'] = array();
+    public function chart() {
+        $this->load->language('dashboard/chart');
 
-		$json['order']['label'] = $this->language->get('text_order');
-		$json['customer']['label'] = $this->language->get('text_customer');
-		$json['order']['data'] = array();
-		$json['customer']['data'] = array();
+        $json = array();
 
-		if (isset($this->request->get['range'])) {
-			$range = $this->request->get['range'];
-		} else {
-			$range = 'day';
-		}
+        $this->load->model('report/sale');
+        $this->load->model('report/customer');
 
-		switch ($range) {
-			default:
-			case 'day':
-				$results = $this->model_report_sale->getTotalOrdersByDay();
+        $json['order'] = array();
+        $json['customer'] = array();
+        $json['xaxis'] = array();
 
-				foreach ($results as $key => $value) {
-					$json['order']['data'][] = array($key, $value['total']);
-				}
+        $json['order']['label'] = $this->language->get('text_order');
+        $json['customer']['label'] = $this->language->get('text_customer');
+        $json['order']['data'] = array();
+        $json['customer']['data'] = array();
 
-				$results = $this->model_report_customer->getTotalCustomersByDay();
+        if (isset($this->request->get['range'])) {
+            $range = $this->request->get['range'];
+        } else {
+            $range = 'day';
+        }
 
-				foreach ($results as $key => $value) {
-					$json['customer']['data'][] = array($key, $value['total']);
-				}
+        switch ($range) {
+            default:
+            case 'day':
+                $results = $this->model_report_sale->getTotalOrdersByDay();
 
-				for ($i = 0; $i < 24; $i++) {
-					$json['xaxis'][] = array($i, $i);
-				}
-				break;
-			case 'week':
-				$results = $this->model_report_sale->getTotalOrdersByWeek();
+                foreach ($results as $key => $value) {
+                    $json['order']['data'][] = array($key, $value['total']);
+                }
 
-				foreach ($results as $key => $value) {
-					$json['order']['data'][] = array($key, $value['total']);
-				}
-				
-				$results = $this->model_report_customer->getTotalCustomersByWeek();
+                $results = $this->model_report_customer->getTotalCustomersByDay();
 
-				foreach ($results as $key => $value) {
-					$json['customer']['data'][] = array($key, $value['total']);
-				}
+                foreach ($results as $key => $value) {
+                    $json['customer']['data'][] = array($key, $value['total']);
+                }
 
-				$date_start = strtotime('-' . date('w') . ' days');
+                for ($i = 0; $i < 24; $i++) {
+                    $json['xaxis'][] = array($i, $i);
+                }
+                break;
+            case 'week':
+                $results = $this->model_report_sale->getTotalOrdersByWeek();
 
-				for ($i = 0; $i < 7; $i++) {
-					$date = date('Y-m-d', $date_start + ($i * 86400));
+                foreach ($results as $key => $value) {
+                    $json['order']['data'][] = array($key, $value['total']);
+                }
 
-					$json['xaxis'][] = array(date('w', strtotime($date)), date('D', strtotime($date)));
-				}
-				break;
-			case 'month':
-				$results = $this->model_report_sale->getTotalOrdersByMonth();
+                $results = $this->model_report_customer->getTotalCustomersByWeek();
 
-				foreach ($results as $key => $value) {
-					$json['order']['data'][] = array($key, $value['total']);
-				}
+                foreach ($results as $key => $value) {
+                    $json['customer']['data'][] = array($key, $value['total']);
+                }
 
-				$results = $this->model_report_customer->getTotalCustomersByMonth();
+                $date_start = strtotime('-' . date('w') . ' days');
 
-				foreach ($results as $key => $value) {
-					$json['customer']['data'][] = array($key, $value['total']);
-				}
+                for ($i = 0; $i < 7; $i++) {
+                    $date = date('Y-m-d', $date_start + ($i * 86400));
 
-				for ($i = 1; $i <= date('t'); $i++) {
-					$date = date('Y') . '-' . date('m') . '-' . $i;
+                    $json['xaxis'][] = array(date('w', strtotime($date)), date('D', strtotime($date)));
+                }
+                break;
+            case 'month':
+                $results = $this->model_report_sale->getTotalOrdersByMonth();
 
-					$json['xaxis'][] = array(date('j', strtotime($date)), date('d', strtotime($date)));
-				}
-				break;
-			case 'year':
-				$results = $this->model_report_sale->getTotalOrdersByYear();
+                foreach ($results as $key => $value) {
+                    $json['order']['data'][] = array($key, $value['total']);
+                }
 
-				foreach ($results as $key => $value) {
-					$json['order']['data'][] = array($key, $value['total']);
-				}
+                $results = $this->model_report_customer->getTotalCustomersByMonth();
 
-				$results = $this->model_report_customer->getTotalCustomersByYear();
+                foreach ($results as $key => $value) {
+                    $json['customer']['data'][] = array($key, $value['total']);
+                }
 
-				foreach ($results as $key => $value) {
-					$json['customer']['data'][] = array($key, $value['total']);
-				}
+                for ($i = 1; $i <= date('t'); $i++) {
+                    $date = date('Y') . '-' . date('m') . '-' . $i;
 
-				for ($i = 1; $i <= 12; $i++) {
-					$json['xaxis'][] = array($i, date('M', mktime(0, 0, 0, $i)));
-				}
-				break;
-		}
+                    $json['xaxis'][] = array(date('j', strtotime($date)), date('d', strtotime($date)));
+                }
+                break;
+            case 'year':
+                $results = $this->model_report_sale->getTotalOrdersByYear();
 
-		$this->response->addHeader('Content-Type: application/json');
-		$this->response->setOutput(json_encode($json));
-	}
+                foreach ($results as $key => $value) {
+                    $json['order']['data'][] = array($key, $value['total']);
+                }
+
+                $results = $this->model_report_customer->getTotalCustomersByYear();
+
+                foreach ($results as $key => $value) {
+                    $json['customer']['data'][] = array($key, $value['total']);
+                }
+
+                for ($i = 1; $i <= 12; $i++) {
+                    $json['xaxis'][] = array($i, date('M', mktime(0, 0, 0, $i)));
+                }
+                break;
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
 }

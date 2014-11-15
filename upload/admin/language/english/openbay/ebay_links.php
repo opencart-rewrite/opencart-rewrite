@@ -1,20 +1,20 @@
 <?php
 // Heading
-$_['heading_title']         		= 'Item links';
-$_['text_openbay']					= 'OpenBay Pro';
-$_['text_ebay']						= 'eBay';
+$_['heading_title']                 = 'Item links';
+$_['text_openbay']                    = 'OpenBay Pro';
+$_['text_ebay']                        = 'eBay';
 
 // Buttons
-$_['button_resync']               	= 'Re-sync';
-$_['button_check_unlinked']       	= 'Check unlinked items';
-$_['button_remove_link']       		= 'Remove link';
+$_['button_resync']                   = 'Re-sync';
+$_['button_check_unlinked']           = 'Check unlinked items';
+$_['button_remove_link']               = 'Remove link';
 
 // Errors
-$_['error_ajax_load']          		= 'Sorry, could not get a response. Try later.';
-$_['error_validation']         		= 'You need to register for your API token and enable the module.';
-$_['error_no_listings']      		= 'No linked products found';
-$_['error_link_value']          	= 'The product link is not value';
-$_['error_link_no_stock']    		= 'A link cannot be created for an out of stock item. End the item manually on eBay.';
+$_['error_ajax_load']                  = 'Sorry, could not get a response. Try later.';
+$_['error_validation']                 = 'You need to register for your API token and enable the module.';
+$_['error_no_listings']              = 'No linked products found';
+$_['error_link_value']              = 'The product link is not value';
+$_['error_link_no_stock']            = 'A link cannot be created for an out of stock item. End the item manually on eBay.';
 $_['error_subtract_setting']        = 'This product is set not to subtract stock in OpenCart.';
 
 // Text
@@ -29,26 +29,26 @@ $_['text_text_linked_desc']         = 'Linked items are OpenCart items that have
 $_['text_text_unlinked_desc']       = 'Unlinked items are listings on your eBay account that do not link to any of your OpenCart products.';
 $_['text_text_unlinked_info']       = 'Click the check unlinked items button to search your active eBay listings for unlinked items. This may take a long time if you have many eBay listings.';
 $_['text_text_loading_items']       = 'Loading items';
-$_['text_failed']       			= 'Failed to load';
-$_['text_limit_reached']       		= 'The maximum number of checks per request was reached, click the button to continue searching';
-$_['text_stock_error']       		= 'Stock error';
-$_['text_listing_ended']       		= 'Listing ended';
-$_['text_filter']             		= 'Filter results';
+$_['text_failed']                   = 'Failed to load';
+$_['text_limit_reached']               = 'The maximum number of checks per request was reached, click the button to continue searching';
+$_['text_stock_error']               = 'Stock error';
+$_['text_listing_ended']               = 'Listing ended';
+$_['text_filter']                     = 'Filter results';
 $_['text_filter_title']             = 'Title';
 $_['text_filter_range']             = 'Stock range';
 $_['text_filter_range_from']        = 'Min';
 $_['text_filter_range_to']          = 'Max';
-$_['text_filter_var']             	= 'Include variants';
+$_['text_filter_var']                 = 'Include variants';
 
 // Tables
-$_['column_action']            		= 'Action';
-$_['column_status']            		= 'Status';
-$_['column_variants']          		= 'Variants';
-$_['column_item_id']            	= 'eBay item ID';
-$_['column_product']           		= 'Product';
-$_['column_product_auto']      		= 'Product name (auto complete)';
-$_['column_listing_title']     		= 'eBay listing title';
-$_['column_allocated']         		= 'Allocated stock';
-$_['column_ebay_stock']        		= 'eBay stock';
-$_['column_stock_available']   		= 'Shop stock';
-$_['column_stock_reserve']   		= 'Reserve level';
+$_['column_action']                    = 'Action';
+$_['column_status']                    = 'Status';
+$_['column_variants']                  = 'Variants';
+$_['column_item_id']                = 'eBay item ID';
+$_['column_product']                   = 'Product';
+$_['column_product_auto']              = 'Product name (auto complete)';
+$_['column_listing_title']             = 'eBay listing title';
+$_['column_allocated']                 = 'Allocated stock';
+$_['column_ebay_stock']                = 'eBay stock';
+$_['column_stock_available']           = 'Shop stock';
+$_['column_stock_reserve']           = 'Reserve level';
