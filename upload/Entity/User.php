@@ -65,6 +65,14 @@ class User
     protected $password;
 
     /**
+     * Reset password code
+     * @var string
+     *
+     * @Column(type="string")
+     */
+    protected $code = '';
+
+    /**
      * @Column(
      *     name="date_added",
      *     type="datetime"
@@ -75,6 +83,14 @@ class User
     /** @Column(type="boolean") **/
     protected $status = true;
 
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getUsername()
+    {
+        return $this->username;
+    }
     
     public function setUsername(string $username)
     {
@@ -86,9 +102,19 @@ class User
         $this->firstname = $firstname;
     }
 
+    public function getFirstname()
+    {
+        return $this->firstname;
+    }
+
     public function setLastname(string $lastname)
     {
         $this->lastname = $lastname;
+    }
+
+    public function getLastname()
+    {
+        return $this->lastname;
     }
 
     public function setEmail(string $email)
@@ -96,20 +122,46 @@ class User
         $this->email = $email;
     }
 
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
     public function setGroupId(int $groupId)
     {
         $this->groupId = $groupId;
     }
 
-    public function setImage(int $image)
+    public function getGroupId()
+    {
+        return $this->groupId;
+    }
+
+    public function setImage(string $image)
     {
         $this->image = $image;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function isActivated()
+    {
+        return $this->status;
     }
 
     public function setStatus(boolean $status)
     {
         $this->status = $status;
     }
+
+    public function setCode(string $code)
+    {
+        $this->code = $code;
+    }
+
 
     public function setPassword(string $password)
     {
@@ -121,4 +173,8 @@ class User
         $this->password = $hashedPassword;
     }
 
+    public function getDateAdded()
+    {
+        return $this->dateAdded;
+    }
 }

@@ -7,17 +7,23 @@ class ControllerCommonProfile extends Controller {
 
         $this->load->model('tool/image');
 
-        $user_info = $this->model_user_user->getUser($this->user->getId());
+        $user = $this->model_user_user->getUser($this->user->getId());
 
-        if ($user_info) {
-            $data['firstname'] = $user_info['firstname'];
-            $data['lastname'] = $user_info['lastname'];
-            $data['username'] = $user_info['username'];
+        if ($user) {
+            $data['firstname'] = $user->getFirstname();
+            $data['lastname'] = $user->getLastname();
+            $data['username'] = $user->getUsername();
 
-            $data['user_group'] = $user_info['user_group'] ;
+            //TODO replace by something better when we will have
+            // UserGroups converted into a doctrine's Entity
+            $this->load->model('user/user_group');
+            $group = $this->model_user_user_group->getUserGroup($user->getGroupId());
+            $data['user_group'] = $group['name'];
 
-            if (is_file(DIR_IMAGE . $user_info['image'])) {
-                $data['image'] = $this->model_tool_image->resize($user_info['image'], 45, 45);
+            $userImage = $user->getImage();
+
+            if (is_file(DIR_IMAGE . $userImage)) {
+                $data['image'] = $this->model_tool_image->resize($userImage, 45, 45);
             } else {
                 $data['image'] = $this->model_tool_image->resize('no_image.png', 45, 45);
             }

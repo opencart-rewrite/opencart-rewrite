@@ -169,15 +169,27 @@ class ControllerUserUser extends Controller {
 
         $user_total = $this->model_user_user->getTotalUsers();
 
-        $results = $this->model_user_user->getUsers($filter_data);
+        $users = $this->model_user_user->getUsers($filter_data);
 
-        foreach ($results as $result) {
+        foreach ($users as $user) {
+            $userId = $user->getId();
+            $dateAdded = $user->getDateAdded()->format(
+                $this->language->get('date_format_short')
+            );
             $data['users'][] = array(
-                'user_id'    => $result['user_id'],
-                'username'   => $result['username'],
-                'status'     => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
-                'date_added' => date($this->language->get('date_format_short'), strtotime($result['date_added'])),
-                'edit'       => $this->url->link('user/user/edit', 'token=' . $this->session->data['token'] . '&user_id=' . $result['user_id'] . $url, 'SSL')
+                'user_id'    => $userId,
+                'username'   => $user->getUsername(),
+                'status'     => (
+                    $user->isActivated() ?
+                    $this->language->get('text_enabled') :
+                    $this->language->get('text_disabled')
+                ),
+                'date_added' => $dateAdded,
+                'edit'       => $this->url->link(
+                    'user/user/edit',
+                    'token=' . $this->session->data['token'] . '&user_id=' . $userId  . $url,
+                    'SSL'
+                )
             );
         }
 
@@ -353,23 +365,22 @@ class ControllerUserUser extends Controller {
         $data['cancel'] = $this->url->link('user/user', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
         if (isset($this->request->get['user_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $user_info = $this->model_user_user->getUser($this->request->get['user_id']);
+            $user = $this->model_user_user->getUser($this->request->get['user_id']);
         }
 
+
+        $data['username'] = '';
         if (isset($this->request->post['username'])) {
             $data['username'] = $this->request->post['username'];
-        } elseif (!empty($user_info)) {
-            $data['username'] = $user_info['username'];
-        } else {
-            $data['username'] = '';
+        } elseif (!is_null($user)) {
+            $data['username'] = $user->getUsername();
         }
 
+        $data['user_group_id'] = '';
         if (isset($this->request->post['user_group_id'])) {
             $data['user_group_id'] = $this->request->post['user_group_id'];
-        } elseif (!empty($user_info)) {
-            $data['user_group_id'] = $user_info['user_group_id'];
-        } else {
-            $data['user_group_id'] = '';
+        } elseif (!is_null($user)) {
+            $data['user_group_id'] = $user->getGroupId();
         }
 
         $this->load->model('user/user_group');
@@ -390,16 +401,16 @@ class ControllerUserUser extends Controller {
 
         if (isset($this->request->post['firstname'])) {
             $data['firstname'] = $this->request->post['firstname'];
-        } elseif (!empty($user_info)) {
-            $data['firstname'] = $user_info['firstname'];
+        } elseif (!is_null($user)) {
+            $data['firstname'] = $user->getFirstname();
         } else {
             $data['firstname'] = '';
         }
 
         if (isset($this->request->post['lastname'])) {
             $data['lastname'] = $this->request->post['lastname'];
-        } elseif (!empty($user_info)) {
-            $data['lastname'] = $user_info['lastname'];
+        } elseif (!is_null($user)) {
+            $data['lastname'] = $user->getLastname();
         } else {
             $data['lastname'] = '';
         }
@@ -407,15 +418,16 @@ class ControllerUserUser extends Controller {
         if (isset($this->request->post['email'])) {
             $data['email'] = $this->request->post['email'];
         } elseif (!empty($user_info)) {
-            $data['email'] = $user_info['email'];
+        } elseif (!is_null($user)) {
+            $data['email'] = $user->getEmail();
         } else {
             $data['email'] = '';
         }
 
         if (isset($this->request->post['image'])) {
             $data['image'] = $this->request->post['image'];
-        } elseif (!empty($user_info)) {
-            $data['image'] = $user_info['image'];
+        } elseif (!is_null($user)) {
+            $data['image'] = $user->getImage();
         } else {
             $data['image'] = '';
         }
@@ -424,8 +436,8 @@ class ControllerUserUser extends Controller {
 
         if (isset($this->request->post['image']) && is_file(DIR_IMAGE . $this->request->post['image'])) {
             $data['thumb'] = $this->model_tool_image->resize($this->request->post['image'], 100, 100);
-        } elseif (!empty($user_info) && $user_info['image'] && is_file(DIR_IMAGE . $user_info['image'])) {
-            $data['thumb'] = $this->model_tool_image->resize($user_info['image'], 100, 100);
+        } elseif (!is_null($user) && $user->getImage() && is_file(DIR_IMAGE . $user->getImage())) {
+            $data['thumb'] = $this->model_tool_image->resize($user->getImage(), 100, 100);
         } else {
             $data['thumb'] = $this->model_tool_image->resize('no_image.png', 100, 100);
         }
@@ -434,8 +446,8 @@ class ControllerUserUser extends Controller {
 
         if (isset($this->request->post['status'])) {
             $data['status'] = $this->request->post['status'];
-        } elseif (!empty($user_info)) {
-            $data['status'] = $user_info['status'];
+        } elseif (!is_null($user)) {
+            $data['status'] = $user->isActivated();
         } else {
             $data['status'] = 0;
         }
@@ -447,42 +459,67 @@ class ControllerUserUser extends Controller {
         $this->response->setOutput($this->load->view('user/user_form.tpl', $data));
     }
 
+    /**
+     * Check if a form's field is inside a certain range
+     * set an error otherwise
+     *
+     * @param string  $field the form's field name
+     * @param integer $min   the min size accepted
+     * @param integer $max   the max size accepted
+     *
+     * @return void
+     */
+    protected function validateSize($field, $min, $max)
+    {
+        $postValue = $this->request->post[$field];
+        $postValueLen = utf8_strlen($postValue);
+        if (($postValueLen < $min) || ($postValueLen > $max)) {
+            $this->setError($field, "error_$field");
+        }
+    }
+
+    /**
+     * get the error message of key $message, and set it
+     * to error field with key $field
+     *
+     * @param string $field   the field of the form which has an error
+     * @param string $message key to retrieve the human readable message
+     *
+     * @return void
+     */
+    protected function setError($field, $message)
+    {
+        $this->error[$field] = $this->language->get($message);
+    }
+
     protected function validateForm() {
         if (!$this->user->hasPermission('modify', 'user/user')) {
             $this->error['warning'] = $this->language->get('error_permission');
         }
 
-        if ((utf8_strlen($this->request->post['username']) < 3) || (utf8_strlen($this->request->post['username']) > 20)) {
-            $this->error['username'] = $this->language->get('error_username');
-        }
+        $this->validateSize('username', 3, 20);
+        $this->validateSize('firstname', 1, 32);
+        $this->validateSize('lastname', 1, 32);
 
-        $user_info = $this->model_user_user->getUserByUsername($this->request->post['username']);
-
+        $postUsername = $this->request->post['username'];
+        $userId = $this->model_user_user->getUserIdByUsername($postUsername);
+        // if Edit this value is set
         if (!isset($this->request->get['user_id'])) {
-            if ($user_info) {
-                $this->error['warning'] = $this->language->get('error_exists');
+            if ($userId) {
+                $this->setError('warning', 'error_exists');
             }
         } else {
-            if ($user_info && ($this->request->get['user_id'] != $user_info['user_id'])) {
-                $this->error['warning'] = $this->language->get('error_exists');
+            $getUserId = $this->request->get['user_id'];
+            if ($userId && ($getUserId != $userId)) {
+                $this->setError('warning', 'error_exists');
             }
         }
-
-        if ((utf8_strlen(trim($this->request->post['firstname'])) < 1) || (utf8_strlen(trim($this->request->post['firstname'])) > 32)) {
-            $this->error['firstname'] = $this->language->get('error_firstname');
-        }
-
-        if ((utf8_strlen(trim($this->request->post['lastname'])) < 1) || (utf8_strlen(trim($this->request->post['lastname'])) > 32)) {
-            $this->error['lastname'] = $this->language->get('error_lastname');
-        }
-
         if ($this->request->post['password'] || (!isset($this->request->get['user_id']))) {
-            if ((utf8_strlen($this->request->post['password']) < 4) || (utf8_strlen($this->request->post['password']) > 20)) {
-                $this->error['password'] = $this->language->get('error_password');
-            }
+
+            $this->validateSize('password', 4, 20);
 
             if ($this->request->post['password'] != $this->request->post['confirm']) {
-                $this->error['confirm'] = $this->language->get('error_confirm');
+                $this->setError('confirm', 'error_confirm');
             }
         }
 
