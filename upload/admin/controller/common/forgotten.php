@@ -20,9 +20,8 @@ class ControllerCommonForgotten extends Controller {
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
             $this->load->language('mail/forgotten');
 
-            $code = sha1(uniqid(mt_rand(), true));
-
-            $this->model_user_user->editCode($this->request->post['email'], $code);
+            $email = $this->request->post['email'];
+            $this->model_user_user->generateForgetPasswordCode($email);
 
             $subject = sprintf($this->language->get('text_subject'), $this->config->get('config_name'));
 
@@ -91,8 +90,12 @@ class ControllerCommonForgotten extends Controller {
     protected function validate() {
         if (!isset($this->request->post['email'])) {
             $this->error['warning'] = $this->language->get('error_email');
-        } elseif (!$this->model_user_user->getTotalUsersByEmail($this->request->post['email'])) {
+            return false;
+        }
+        $email = $this->request->post['email'];
+        if ($this->model_user_user->isEmailAlreadyTaken($email)) {
             $this->error['warning'] = $this->language->get('error_email');
+            return false;
         }
 
         return !$this->error;

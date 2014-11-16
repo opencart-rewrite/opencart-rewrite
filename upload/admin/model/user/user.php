@@ -8,7 +8,12 @@ class ModelUserUser extends Model {
         $user->setPassword($data['password']);
         $user->setFirstname($data['firstname']);
         $user->setLastname($data['lastname']);
-        $user->setEmail($data['email']);
+        // we store emails as lower case
+        // as anyway, elsewhere in the application
+        // we do comparison using lower case
+        $user->setEmail(
+            utf8_strtolower($data['email'])
+        );
         $user->setImage($data['image']);
         $user->setStatus(((int)$data['status']) === 1);
 
@@ -16,46 +21,173 @@ class ModelUserUser extends Model {
         $this->em->flush();
     }
 
-    public function editUser($user_id, $data) {
-        $this->db->query("UPDATE `" . DB_PREFIX . "user` SET username = '" . $this->db->escape($data['username']) . "', user_group_id = '" . (int)$data['user_group_id'] . "', firstname = '" . $this->db->escape($data['firstname']) . "', lastname = '" . $this->db->escape($data['lastname']) . "', email = '" . $this->db->escape($data['email']) . "', image = '" . $this->db->escape($data['image']) . "', status = '" . (int)$data['status'] . "' WHERE user_id = '" . (int)$user_id . "'");
+    /**
+     *
+     */
+    public function editUser($userId, $data)
+    {
+
+        $this->em
+            ->createQuery(
+                '
+                UPDATE Entity\User u
+                SET
+                    u.username =  :username,
+                    u.groupId =  :groupId,
+                    u.firstname =  :firstname,
+                    u.lastname = :lastname,
+                    u.email = :email,
+                    u.image = :image,
+                    u.status = :status
+                WHERE u.id = :id
+                '
+            )
+            ->setParameter('username', $data['username'])
+            ->setParameter('groupId', (int) $data['user_group_id'])
+            ->setParameter('firstname', $data['firstname'])
+            ->setParameter('lastname', $data['lastname'])
+            ->setParameter('email', $data['email'])
+            ->setParameter('image', $data['image'])
+            ->setParameter('status', (int) $data['status'])
+            ->setParameter('id', (int) $userId)
+            ->execute();
 
         if ($data['password']) {
-            $this->db->query("UPDATE `" . DB_PREFIX . "user` SET salt = '" . $this->db->escape($salt = substr(md5(uniqid(rand(), true)), 0, 9)) . "', password = '" . $this->db->escape(sha1($salt . sha1($salt . sha1($data['password'])))) . "' WHERE user_id = '" . (int)$user_id . "'");
+            $this->editPassword($userId, $data['password']);
         }
     }
 
-    public function editPassword($user_id, $password) {
-        $this->db->query("UPDATE `" . DB_PREFIX . "user` SET salt = '" . $this->db->escape($salt = substr(md5(uniqid(rand(), true)), 0, 9)) . "', password = '" . $this->db->escape(sha1($salt . sha1($salt . sha1($password)))) . "', code = '' WHERE user_id = '" . (int)$user_id . "'");
+    /**
+     * Change the password of a given user by new one
+     * in the meantime, reset also the salt and forget password code
+     * of this user
+     *
+     * @param string $userId   Id of the user to edit the password of
+     * @param string $password New password to hash, salt and save
+     *
+     * @return void
+     */
+    public function editPassword($userId, $password)
+    {
+        $salt = $this->_generateSalt();
+        $hashedPassword = $this->_hashPasswordWithSalt($password, $salt);
+
+        $this->em
+            ->createQuery(
+                '
+                UPDATE Entity\User u
+                SET
+                    u.code = "",
+                    u.password =  :password,
+                    u.salt = :salt
+                WHERE u.id = :id
+                '
+            )
+            ->setParameter('password', $password)
+            ->setParameter('salt', $salt)
+            ->setParameter('id', $userId)
+            ->execute();
     }
 
-    public function editCode($email, $code) {
-        $this->db->query("UPDATE `" . DB_PREFIX . "user` SET code = '" . $this->db->escape($code) . "' WHERE LCASE(email) = '" . $this->db->escape(utf8_strtolower($email)) . "'");
+    /**
+     * generate a 'forgot password code' for a user, given the
+     * user's email
+     *
+     * @param string $email email to use to identify user
+     *
+     * @return void
+     */
+    public function generateForgetPasswordCode($email)
+    {
+        $code = sha1(uniqid(mt_rand(), true));
+
+        $email = utf8_strtolower($email);
+
+        $this->em
+            ->createQuery(
+                '
+                UPDATE Entity\User u
+                SET u.code = :code
+                WHERE u.email = :email
+                '
+            )
+            ->setParameter('code', $code)
+            ->setParameter('email', $email)
+            ->execute();
     }
 
-    public function deleteUser($user_id) {
-        $this->db->query("DELETE FROM `" . DB_PREFIX . "user` WHERE user_id = '" . (int)$user_id . "'");
+    /**
+     * Delete user by given id
+     *
+     * @param string $userId id of the user to delete
+     *
+     * @return void
+     */
+    public function deleteUser($userId)
+    {
+        $this->em
+            ->createQuery('DELETE FROM Entity\User u WHERE u.id = :id')
+            ->setParameter('id', $userId)
+            ->execute();
     }
 
-    public function getUser($user_id) {
-        $query = $this->db->query("SELECT *, (SELECT ug.name FROM `" . DB_PREFIX . "user_group` ug WHERE ug.user_group_id = u.user_group_id) AS user_group FROM `" . DB_PREFIX . "user` u WHERE u.user_id = '" . (int)$user_id . "'");
-
-        return $query->row;
+    public function getUser($id) {
+        return $this->em->getRepository('Entity\User')->find($id);
     }
 
-    public function getUserByUsername($username) {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "user` WHERE username = '" . $this->db->escape($username) . "'");
+    /**
+     * Get the user id of a user identified by a
+     * username
+     *
+     * @param string $username name of the user we're searching
+     *
+     * @return string (or null if no such user)
+     */
+    public function getUserIdByUsername($username)
+    {
 
-        return $query->row;
+        return $this->em
+            // min is to force a result to be
+            // returned even if no row match
+            ->createQuery(
+                '
+                SELECT MIN(u.id)
+                FROM Entity\User u
+                WHERE u.username = :username
+                '
+            )
+            ->setParameter('username', $username)
+            ->getSingleScalarResult();
     }
 
-    public function getUserByCode($code) {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "user` WHERE code = '" . $this->db->escape($code) . "' AND code != ''");
+    /**
+     * Get the user id of a user identified by a
+     * forget password code
+     *
+     * @param string $code forget password code
+     *
+     * @return string (or null if no such user)
+     */
+    public function getUserIdByCode($code)
+    {
 
-        return $query->row;
+        return $this->em
+
+            // min is to force a result to be
+            // returned even if no row match
+            ->createQuery(
+                '
+                SELECT MIN(u.id)
+                FROM Entity\User u
+                WHERE u.code = :code
+                '
+            )
+            ->setParameter('code', $code)
+            ->setMaxResults(1)
+            ->getSingleScalarResult();
     }
 
     public function getUsers($data = array()) {
-        $sql = "SELECT * FROM `" . DB_PREFIX . "user`";
 
         $sort_data = array(
             'username',
@@ -63,53 +195,102 @@ class ModelUserUser extends Model {
             'date_added'
         );
 
+        $orderBy = 'username';
         if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
-            $sql .= " ORDER BY " . $data['sort'];
-        } else {
-            $sql .= " ORDER BY username";
+            $orderby = $data['sort'];
         }
 
+        $order = 'ASC';
         if (isset($data['order']) && ($data['order'] == 'DESC')) {
-            $sql .= " DESC";
-        } else {
-            $sql .= " ASC";
+            $order = "DESC";
         }
+
+        $start = 0;
+        $limit = 20;
 
         if (isset($data['start']) || isset($data['limit'])) {
-            if ($data['start'] < 0) {
-                $data['start'] = 0;
-            }
-
-            if ($data['limit'] < 1) {
-                $data['limit'] = 20;
-            }
-
-            $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+            $start = $data['start'];
+            $limit = $data['limit'];
         }
-
-        $query = $this->db->query($sql);
-
-        return $query->rows;
+        return $this->em->createQueryBuilder()
+            ->select('u')
+            ->from('Entity\User', 'u')
+            ->orderBy('u.'.$orderBy, $order)
+            ->setFirstResult($start)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
      *
      */
-    public function getTotalUsers() {
+    public function getTotalUsers()
+    {
         return $this->em
             ->createQuery('SELECT COUNT(u.id) FROM Entity\User u')
             ->getSingleScalarResult();
     }
 
-    public function getTotalUsersByGroupId($user_group_id) {
-        $query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "user` WHERE user_group_id = '" . (int)$user_group_id . "'");
+    /**
+     * Get number of users in a given group
+     *
+     * @param string $groupId id of the group we want the number of user
+     *
+     * @return integer
+     */
+    public function getTotalUsersByGroupId($groupId)
+    {
+        return $this->em
+            ->createQuery(
+                '
+                SELECT COUNT(u.id)
+                FROM Entity\User u
+                WHERE u.groupId = :groupId
+                '
+            )
+            ->setParameter('groupId',(int) $groupId)
+            ->getSingleScalarResult();
 
-        return $query->row['total'];
     }
 
-    public function getTotalUsersByEmail($email) {
-        $query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "user` WHERE LCASE(email) = '" . $this->db->escape(utf8_strtolower($email)) . "'");
+    /**
+     * Check if email is already existing in database
+     *
+     * @param string $email email to check
+     *
+     * @return boolean
+     */
+    public function isEmailAlreadyTaken($email)
+    {
+        $email = utf8_strtolower($email);
 
-        return $query->row['total'];
+        $count = $this->em
+            ->createQuery(
+                '
+                SELECT COUNT(u.id)
+                FROM Entity\User u
+                WHERE u.email = :email
+                '
+            )
+            ->setParameter('email', $email)
+            ->getSingleScalarResult();
+        return $count !== 0;
+    }
+
+    /**
+     *
+     */
+    private function _generateSalt()
+    {
+        return substr(md5(uniqid(rand(), true)), 0, 9);
+    }
+
+    /**
+     *
+     */
+    private function _hashPasswordWithSalt($password, $salt)
+    {
+        return sha1($salt . sha1($salt . sha1($password)));
     }
 }
