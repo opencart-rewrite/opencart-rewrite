@@ -80,10 +80,13 @@ class ModelUserUser extends Model {
         return $query->rows;
     }
 
+    /**
+     *
+     */
     public function getTotalUsers() {
-        $query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "user`");
-
-        return $query->row['total'];
+        return $this->em
+            ->createQuery('SELECT COUNT(u.id) FROM Entity\User u')
+            ->getSingleScalarResult();
     }
 
     public function getTotalUsersByGroupId($user_group_id) {

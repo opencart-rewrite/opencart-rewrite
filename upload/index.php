@@ -16,6 +16,7 @@ if (!defined('DIR_APPLICATION')) {
 // Startup
 require_once(DIR_SYSTEM . 'startup.php');
 
+require_once DIR_SYSTEM . 'bootstrap.php';
 // Registry
 $registry = new Registry();
 
@@ -26,6 +27,9 @@ $registry->set('load', $loader);
 // Config
 $config = new Config();
 $registry->set('config', $config);
+
+// Entity Manager
+$registry->set('em', $entityManager);
 
 // Database
 $db = new DB(DB_DRIVER, DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
