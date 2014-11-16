@@ -1,7 +1,19 @@
 <?php
 class ModelUserUser extends Model {
-    public function addUser($data) {
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "user` SET username = '" . $this->db->escape($data['username']) . "', user_group_id = '" . (int)$data['user_group_id'] . "', salt = '" . $this->db->escape($salt = substr(md5(uniqid(rand(), true)), 0, 9)) . "', password = '" . $this->db->escape(sha1($salt . sha1($salt . sha1($data['password'])))) . "', firstname = '" . $this->db->escape($data['firstname']) . "', lastname = '" . $this->db->escape($data['lastname']) . "', email = '" . $this->db->escape($data['email']) . "', image = '" . $this->db->escape($data['image']) . "', status = '" . (int)$data['status'] . "', date_added = NOW()");
+    public function addUser($data)
+    {
+        $user = new Entity\User();
+        $user->setUsername($data['username']);
+        $user->setGroupId((int) $data['user_group_id']);
+        $user->setPassword($data['password']);
+        $user->setFirstname($data['firstname']);
+        $user->setLastname($data['lastname']);
+        $user->setEmail($data['email']);
+        $user->setImage($data['image']);
+        $user->setStatus(((int)$data['status']) === 1);
+
+        $this->em->persist($user);
+        $this->em->flush();
     }
 
     public function editUser($user_id, $data) {
