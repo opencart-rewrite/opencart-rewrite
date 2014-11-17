@@ -1,24 +1,80 @@
 <?php
 class ModelUserApi extends Model {
     public function addApi($data) {
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "api` SET username = '" . $this->db->escape($data['username']) . "', `password` = '" . $this->db->escape($data['password']) . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
+
+        $api = new Entity\Api();
+        $api->setUsername($data['username']);
+        $api->setPassword($data['password']);
+        $api->setStatus(((int)$data['status']) === 1);
+
+        $this->em->persist($api);
+        $this->em->flush();
     }
 
-    public function editApi($api_id, $data) {
-        $this->db->query("UPDATE `" . DB_PREFIX . "api` SET username = '" . $this->db->escape($data['username']) . "', `password` = '" . $this->db->escape($data['password']) . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE api_id = '" . (int)$api_id . "'");
+    /**
+     *
+     */
+    public function editApi($id, $data)
+    {
+        $status = ((int)$data['status']) === 1;
+
+        $this->em
+            ->createQuery(
+                '
+                UPDATE Entity\Api a
+                SET
+                    a.username = :username,
+                    a.password =  :password,
+                    a.dateModified = :dateModified,
+                    a.status = :status
+                WHERE a.id = :id
+                '
+            )
+            ->setParameter('username', $data['username'])
+            ->setParameter('password', $data['password'])
+            ->setParameter('dateModified', new \DateTime())
+            ->setParameter('status', $status)
+            ->setParameter('id', $id)
+            ->execute();
+
     }
 
-    public function deleteApi($api_id) {
-        $this->db->query("DELETE FROM `" . DB_PREFIX . "api` WHERE api_id = '" . (int)$api_id . "'");
+    /**
+     * Delete api user by given id
+     *
+     * @param string $id Id of the api user to delete
+     *
+     * @return void
+     */
+    public function deleteApi($id)
+    {
+        $this->em
+            ->createQuery('DELETE FROM Entity\Api u WHERE u.id = :id')
+            ->setParameter('id', $id)
+            ->execute();
     }
 
-    public function getApi($api_id) {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "api` WHERE api_id = '" . (int)$api_id . "'");
 
-        return $query->row;
+
+    /**
+     *
+     */
+    public function getApiAsArray($id)
+    {
+        return $this->em->createQueryBuilder()
+            ->select('a')
+            ->from('Entity\Api','a')
+            ->where('a.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getArrayResult();
     }
 
-    public function getApis($data = array()) {
+    /**
+     *
+     */
+    public function getApisAsArray($data = array())
+    {
         $sql = "SELECT * FROM `" . DB_PREFIX . "api`";
 
         $sort_data = array(
@@ -28,38 +84,41 @@ class ModelUserApi extends Model {
             'date_modified'
         );
 
+        $orderBy = 'username';
         if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
-            $sql .= " ORDER BY " . $data['sort'];
-        } else {
-            $sql .= " ORDER BY username";
+            $orderby = $data['sort'];
         }
 
+        $order = 'ASC';
         if (isset($data['order']) && ($data['order'] == 'DESC')) {
-            $sql .= " DESC";
-        } else {
-            $sql .= " ASC";
+            $order = "DESC";
         }
+
+        $start = 0;
+        $limit = 20;
 
         if (isset($data['start']) || isset($data['limit'])) {
-            if ($data['start'] < 0) {
-                $data['start'] = 0;
-            }
-
-            if ($data['limit'] < 1) {
-                $data['limit'] = 20;
-            }
-
-            $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+            $start = $data['start'];
+            $limit = $data['limit'];
         }
-
-        $query = $this->db->query($sql);
-
-        return $query->rows;
+        return $this->em->createQueryBuilder()
+            ->select('u')
+            ->from('Entity\Api', 'u')
+            ->orderBy('u.'.$orderBy, $order)
+            ->setFirstResult($start)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
     }
 
-    public function getTotalApis() {
-        $query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "api`");
+    /**
+     *
+     */
+    public function getTotalApis()
+    {
 
-        return $query->row['total'];
+        return $this->em
+            ->createQuery('SELECT COUNT(u.id) FROM Entity\Api u')
+            ->getSingleScalarResult();
     }
 }

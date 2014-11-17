@@ -149,11 +149,14 @@ class ControllerSaleOrder extends Controller {
         // API
         $this->load->model('user/api');
 
-        $api_info = $this->model_user_api->getApi($this->config->get('config_api_id'));
+        $apiId = $this->config->get('config_api_id');
+        $apiInfo = $this->model_user_api->getApi($apiId);
 
-        if (!$api_info) {
+        if (is_empty($apiInfo)) {
             return;
         }
+        $apiInfo = $apiInfo[0];
+
         $curl = curl_init();
 
         // Set SSL if required

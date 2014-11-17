@@ -661,10 +661,10 @@
                     <select name="config_api_id" id="input-api" class="form-control">
                       <option value="0"><?php echo $text_none; ?></option>
                       <?php foreach ($apis as $api) { ?>
-                      <?php if ($api['api_id'] == $config_api_id) { ?>
-                      <option value="<?php echo $api['api_id']; ?>" selected="selected"><?php echo $api['username']; ?></option>
+                      <?php if ($api['id'] == $config_api_id) { ?>
+                      <option value="<?php echo $api['id']; ?>" selected="selected"><?php echo $api['username']; ?></option>
                       <?php } else { ?>
-                      <option value="<?php echo $api['api_id']; ?>"><?php echo $api['username']; ?></option>
+                      <option value="<?php echo $api['id']; ?>"><?php echo $api['username']; ?></option>
                       <?php } ?>
                       <?php } ?>
                     </select>
