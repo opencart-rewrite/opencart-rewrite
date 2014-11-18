@@ -796,7 +796,7 @@ class ControllerSettingSetting extends Controller {
 
         $this->load->model('user/api');
 
-        $data['apis'] = $this->model_user_api->getApis();
+        $data['apis'] = $this->model_user_api->getApisAsArray();
 
         if (isset($this->request->post['config_cart_weight'])) {
             $data['config_cart_weight'] = $this->request->post['config_cart_weight'];

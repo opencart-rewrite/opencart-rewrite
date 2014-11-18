@@ -169,15 +169,31 @@ class ControllerUserApi extends Controller {
 
         $user_total = $this->model_user_api->getTotalApis();
 
-        $results = $this->model_user_api->getApis($filter_data);
+        $results = $this->model_user_api->getApisAsArray($filter_data);
 
         foreach ($results as $result) {
+            $apiId = $result['id'];
+            $dateAdded = $result['dateAdded']->format(
+                $this->language->get('date_format_short')
+            );
+
+            $token = $this->session->data['token'];
+            $editLink = $this->url->link(
+                'user/api/edit',
+                "token=$token&api_id=$apiId" . $url,
+                'SSL'
+            );
+
             $data['apis'][] = array(
-                'api_id'     => $result['api_id'],
+                'api_id'     => $result['id'],
                 'username'   => $result['username'],
-                'status'     => ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled')),
-                'date_added' => date($this->language->get('date_format_short'), strtotime($result['date_added'])),
-                'edit'       => $this->url->link('user/api/edit', 'token=' . $this->session->data['token'] . '&api_id=' . $result['api_id'] . $url, 'SSL')
+                'status'     => (
+                    $result['status'] ?
+                    $this->language->get('text_enabled') :
+                    $this->language->get('text_disabled')
+                ),
+                'date_added' => $dateAdded,
+                'edit'       => $editLink
             );
         }
 
@@ -331,13 +347,14 @@ class ControllerUserApi extends Controller {
         $data['cancel'] = $this->url->link('user/api', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
         if (isset($this->request->get['api_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $api_info = $this->model_user_api->getApi($this->request->get['api_id']);
+            $apiId = $this->request->get['api_id'];
+            $api_info = $this->model_user_api->getApiAsArray($apiId);
         }
 
         if (isset($this->request->post['username'])) {
             $data['username'] = $this->request->post['username'];
         } elseif (!empty($api_info)) {
-            $data['username'] = $api_info['username'];
+            $data['username'] = $api_info[0]['username'];
         } else {
             $data['username'] = '';
         }
@@ -345,7 +362,7 @@ class ControllerUserApi extends Controller {
         if (isset($this->request->post['password'])) {
             $data['password'] = $this->request->post['password'];
         } elseif (!empty($api_info)) {
-            $data['password'] = $api_info['password'];
+            $data['password'] = $api_info[0]['password'];
         } else {
             $data['password'] = '';
         }
@@ -353,7 +370,7 @@ class ControllerUserApi extends Controller {
         if (isset($this->request->post['status'])) {
             $data['status'] = $this->request->post['status'];
         } elseif (!empty($api_info)) {
-            $data['status'] = $api_info['status'];
+            $data['status'] = $api_info[0]['status'];
         } else {
             $data['status'] = 0;
         }
