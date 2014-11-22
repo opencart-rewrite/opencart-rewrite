@@ -105,13 +105,10 @@ class ModelAccountCustomer extends Model {
         $this->event->trigger('post.customer.edit.newsletter');
     }
 
-    /**
-     *
-     */
     public function getCustomer($customer_id) {
-        return $this->em
-            ->getRepository('Entity\Customer')
-            ->find($customer_id);
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int)$customer_id . "'");
+
+        return $query->row;
     }
 
     /**
