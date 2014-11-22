@@ -9,27 +9,29 @@ class User {
         $this->request = $registry->get('request');
         $this->session = $registry->get('session');
 
-        if (isset($this->session->data['user_id'])) {
-            $user_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "user WHERE user_id = '" . (int)$this->session->data['user_id'] . "' AND status = '1'");
+        if (!isset($this->session->data['user_id'])) {
+            return;
+        }
+        $user_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "user WHERE user_id = '" . (int)$this->session->data['user_id'] . "' AND status = '1'");
 
-            if ($user_query->num_rows) {
-                $this->user_id = $user_query->row['user_id'];
-                $this->username = $user_query->row['username'];
+        if (!$user_query->num_rows) {
+            $this->logout();
+            return;
+        }
+        $this->user_id = $user_query->row['user_id'];
+        $this->username = $user_query->row['username'];
 
-                $this->db->query("UPDATE " . DB_PREFIX . "user SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE user_id = '" . (int)$this->session->data['user_id'] . "'");
+        $this->db->query("UPDATE " . DB_PREFIX . "user SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE user_id = '" . (int)$this->session->data['user_id'] . "'");
 
-                $user_group_query = $this->db->query("SELECT permission FROM " . DB_PREFIX . "user_group WHERE user_group_id = '" . (int)$user_query->row['user_group_id'] . "'");
+        $user_group_query = $this->db->query("SELECT permission FROM " . DB_PREFIX . "user_group WHERE user_group_id = '" . (int)$user_query->row['user_group_id'] . "'");
 
-                $permissions = unserialize($user_group_query->row['permission']);
+        $permissions = unserialize($user_group_query->row['permission']);
 
-                if (is_array($permissions)) {
-                    foreach ($permissions as $key => $value) {
-                        $this->permission[$key] = $value;
-                    }
-                }
-            } else {
-                $this->logout();
-            }
+        if (!is_array($permissions)) {
+            return;
+        }
+        foreach ($permissions as $key => $value) {
+            $this->permission[$key] = $value;
         }
     }
 
