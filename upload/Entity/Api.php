@@ -3,7 +3,9 @@ namespace Entity;
 /**
  * Represent a api user of opencart
  *
- * @Entity
+ * @Entity(
+ *     repositoryClass="Entity\ApiRepository"
+ * )
  * @Table(name="oc_api")
  *
  * @category Entity
@@ -100,6 +102,12 @@ class Api
 
     public function getDateModified()
     {
-        return $this->getDateModified;
+        return $this->dateModified;
+    }
+
+    public function setDateModified(\DateTime $dateModified)
+    {
+        $this->dateModified = $dateModified;
+        return $this;
     }
 }

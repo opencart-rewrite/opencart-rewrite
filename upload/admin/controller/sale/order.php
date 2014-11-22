@@ -147,10 +147,11 @@ class ControllerSaleOrder extends Controller {
     private function _callApi()
     {
         // API
-        $this->load->model('user/api');
-
         $apiId = $this->config->get('config_api_id');
-        $apiInfo = $this->model_user_api->getApi($apiId);
+        $apiInfo = $this->em
+            ->getRepository('Entity\Api')
+            ->findAsArray($apiId)
+        ;
 
         if (is_empty($apiInfo)) {
             return;
@@ -1486,7 +1487,11 @@ class ControllerSaleOrder extends Controller {
             if ($this->user->hasPermission('modify', 'sale/order')) {
                 $this->load->model('user/api');
 
-                $api_info = $this->model_user_api->getApi($this->config->get('config_api_id'));
+                $apiId = $this->config->get('config_api_id');
+                $api_info = $this->em
+                    ->getRepository('Entity\Api')
+                    ->findAsArray($apiId)
+                ;
 
                 if ($api_info) {
                     $curl = curl_init();
