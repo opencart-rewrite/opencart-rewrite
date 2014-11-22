@@ -105,16 +105,26 @@ class ModelAccountCustomer extends Model {
         $this->event->trigger('post.customer.edit.newsletter');
     }
 
+    /**
+     *
+     */
     public function getCustomer($customer_id) {
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int)$customer_id . "'");
-
-        return $query->row;
+        return $this->em
+            ->getRepository('Entity\Customer')
+            ->find($customer_id);
     }
 
+    /**
+     * Get the customer by its email address
+     *
+     * @param string $email email of the customer trying to login
+     *
+     * @return Entity\Customer
+     */
     public function getCustomerByEmail($email) {
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "'");
-
-        return $query->row;
+        return $this->em
+            ->getRepository('Entity\Customer')
+            ->findOneByEmail(utf8_strtolower($email));
     }
 
     public function getCustomerByToken($token) {
