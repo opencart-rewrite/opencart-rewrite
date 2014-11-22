@@ -2,12 +2,18 @@
 class ControllerUserUserPermission extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\UserGroup'
+        );
+    }
+
     public function index() {
         $this->load->language('user/user_group');
 
         $this->document->setTitle($this->language->get('heading_title'));
-
-        $this->load->model('user/user_group');
 
         $this->getList();
     }
@@ -17,10 +23,14 @@ class ControllerUserUserPermission extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user_group');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_user_group->addUserGroup($this->request->post);
+            $post = $this->request->post;
+            $this->repository->add(
+                $post['name'],
+                isset($post['permission']) ?
+                    $post['permission'] :
+                    array()
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -49,10 +59,16 @@ class ControllerUserUserPermission extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user_group');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_user_group->editUserGroup($this->request->get['user_group_id'], $this->request->post);
+            $groupId = $this->request->get['user_group_id'];
+            $post = $this->request->post;
+            $this->repository->edit(
+                $groupId,
+                $post['name'],
+                isset($post['permission']) ?
+                    $post['permission'] :
+                    array()
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -81,11 +97,9 @@ class ControllerUserUserPermission extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user_group');
-
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $user_group_id) {
-                $this->model_user_user_group->deleteUserGroup($user_group_id);
+                $this->repository->delete($user_group_id);
             }
 
             $this->session->data['success'] = $this->language->get('text_success');
@@ -160,22 +174,19 @@ class ControllerUserUserPermission extends Controller {
 
         $data['user_groups'] = array();
 
-        $filter_data = array(
-            'sort'  => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-            'limit' => $this->config->get('config_limit_admin')
+        $user_group_total = $this->repository->count();
+        $results = $this->repository->findAllPaginated(
+            ($page - 1) * $this->config->get('config_limit_admin'),
+            $this->config->get('config_limit_admin'),
+            $sort,
+            $order
         );
-
-        $user_group_total = $this->model_user_user_group->getTotalUserGroups();
-
-        $results = $this->model_user_user_group->getUserGroups($filter_data);
 
         foreach ($results as $result) {
             $data['user_groups'][] = array(
-                'user_group_id' => $result['user_group_id'],
+                'user_group_id' => $result['id'],
                 'name'          => $result['name'],
-                'edit'          => $this->url->link('user/user_permission/edit', 'token=' . $this->session->data['token'] . '&user_group_id=' . $result['user_group_id'] . $url, 'SSL')
+                'edit'          => $this->url->link('user/user_permission/edit', 'token=' . $this->session->data['token'] . '&user_group_id=' . $result['id'] . $url, 'SSL')
             );
         }
 
@@ -317,7 +328,9 @@ class ControllerUserUserPermission extends Controller {
         $data['cancel'] = $this->url->link('user/user_permission', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
         if (isset($this->request->get['user_group_id']) && $this->request->server['REQUEST_METHOD'] != 'POST') {
-            $user_group_info = $this->model_user_user_group->getUserGroup($this->request->get['user_group_id']);
+            $user_group_info = $this->repository->findAsArray(
+                $this->request->get['user_group_id']
+            );
         }
 
         if (isset($this->request->post['name'])) {

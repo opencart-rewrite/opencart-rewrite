@@ -383,9 +383,11 @@ class ControllerUserUser extends Controller {
             $data['user_group_id'] = $user->getGroupId();
         }
 
-        $this->load->model('user/user_group');
+        $data['user_groups'] = $this->em
+            ->getRepository('Entity\UserGroup')
+            ->findAllPaginated()
+        ;
 
-        $data['user_groups'] = $this->model_user_user_group->getUserGroups();
 
         if (isset($this->request->post['password'])) {
             $data['password'] = $this->request->post['password'];

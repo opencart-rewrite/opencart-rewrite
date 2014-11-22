@@ -22,10 +22,8 @@ class ControllerExtensionTotal extends Controller {
         if ($this->validate()) {
             $this->model_extension_extension->install('total', $this->request->get['extension']);
 
-            $this->load->model('user/user_group');
-
-            $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'total/' . $this->request->get['extension']);
-            $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'total/' . $this->request->get['extension']);
+            $route = 'total/' . $this->request->get['extension'];
+            $this->addPermission($route);
 
             // Call install method if it exsits
             $this->load->controller('total/' . $this->request->get['extension'] . '/install');
