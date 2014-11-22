@@ -2,12 +2,18 @@
 class ControllerUserUser extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\User'
+        );
+    }
+
     public function index() {
         $this->load->language('user/user');
 
         $this->document->setTitle($this->language->get('heading_title'));
-
-        $this->load->model('user/user');
 
         $this->getList();
     }
@@ -17,10 +23,8 @@ class ControllerUserUser extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_user->addUser($this->request->post);
+            $this->repository->add($this->request->post);
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -49,10 +53,11 @@ class ControllerUserUser extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_user->editUser($this->request->get['user_id'], $this->request->post);
+            $this->repository->edit(
+                $this->request->get['user_id'],
+                $this->request->post
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -81,11 +86,9 @@ class ControllerUserUser extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user');
-
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $user_id) {
-                $this->model_user_user->deleteUser($user_id);
+                $this->repository->delete($user_id);
             }
 
             $this->session->data['success'] = $this->language->get('text_success');
@@ -160,16 +163,14 @@ class ControllerUserUser extends Controller {
 
         $data['users'] = array();
 
-        $filter_data = array(
-            'sort'  => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-            'limit' => $this->config->get('config_limit_admin')
+        $user_total = $this->repository->count();
+
+        $users = $this->repository->findAllPaginated(
+            ($page - 1) * $this->config->get('config_limit_admin'),
+            $this->config->get('config_limit_admin'),
+            $sort,
+            $order
         );
-
-        $user_total = $this->model_user_user->getTotalUsers();
-
-        $users = $this->model_user_user->getUsers($filter_data);
 
         foreach ($users as $user) {
             $userId = $user->getId();
@@ -365,7 +366,7 @@ class ControllerUserUser extends Controller {
         $data['cancel'] = $this->url->link('user/user', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
         if (isset($this->request->get['user_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $user = $this->model_user_user->getUser($this->request->get['user_id']);
+            $user = $this->repository->find($this->request->get['user_id']);
         }
 
 
@@ -504,7 +505,7 @@ class ControllerUserUser extends Controller {
         $this->validateSize('lastname', 1, 32);
 
         $postUsername = $this->request->post['username'];
-        $userId = $this->model_user_user->getUserIdByUsername($postUsername);
+        $userId = $this->repository->getIdByUsername($postUsername);
         // if Edit this value is set
         if (!isset($this->request->get['user_id'])) {
             if ($userId) {

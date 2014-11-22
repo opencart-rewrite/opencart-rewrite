@@ -2,6 +2,14 @@
 class ControllerCommonForgotten extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\User'
+        );
+    }
+
     public function index() {
         if ($this->user->isLogged() && isset($this->request->get['token']) && ($this->request->get['token'] == $this->session->data['token'])) {
             $this->response->redirect($this->url->link('common/dashboard', '', 'SSL'));
@@ -15,13 +23,11 @@ class ControllerCommonForgotten extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/user');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
             $this->load->language('mail/forgotten');
 
             $email = $this->request->post['email'];
-            $this->model_user_user->generateForgetPasswordCode($email);
+            $this->repository->generateForgetPasswordCode($email);
 
             $subject = sprintf($this->language->get('text_subject'), $this->config->get('config_name'));
 
@@ -93,7 +99,7 @@ class ControllerCommonForgotten extends Controller {
             return false;
         }
         $email = $this->request->post['email'];
-        if ($this->model_user_user->isEmailAlreadyTaken($email)) {
+        if ($this->repository->isEmailAlreadyTaken($email)) {
             $this->error['warning'] = $this->language->get('error_email');
             return false;
         }

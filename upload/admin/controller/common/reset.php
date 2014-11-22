@@ -2,6 +2,14 @@
 class ControllerCommonReset extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\User'
+        );
+    }
+
     public function index() {
         if ($this->user->isLogged() && isset($this->request->get['token']) && ($this->request->get['token'] == $this->session->data['token'])) {
             $this->response->redirect($this->url->link('common/dashboard', '', 'SSL'));
@@ -17,9 +25,7 @@ class ControllerCommonReset extends Controller {
             $code = '';
         }
 
-        $this->load->model('user/user');
-
-        $userId = $this->model_user_user->getUserIdByCode($code);
+        $userId = $this->repository->getIdByCode($code);
 
         if (is_null($userId)) {
             $this->load->model('setting/setting');
@@ -34,7 +40,10 @@ class ControllerCommonReset extends Controller {
         $this->document->setTitle($this->language->get('heading_title'));
 
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-            $this->model_user_user->editPassword($userId, $this->request->post['password']);
+            $this->repository->editPassword(
+                $userId,
+                $this->request->post['password']
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 

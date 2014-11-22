@@ -3,7 +3,9 @@ namespace Entity;
 /**
  * Represent a user of opencart
  *
- * @Entity
+ * @Entity(
+ *     repositoryClass="Entity\UserRepository"
+ * )
  * @Table(name="oc_user")
  *
  * @category Entity
@@ -64,6 +66,9 @@ class User
     /** @Column(type="string") **/
     protected $password;
 
+    /** @Column(type="string") **/
+    protected $ip = '';
+
     /**
      * Reset password code
      * @var string
@@ -92,12 +97,12 @@ class User
         return $this->username;
     }
     
-    public function setUsername(string $username)
+    public function setUsername($username)
     {
         $this->username = $username;
     }
 
-    public function setFirstname(string $firstname)
+    public function setFirstname($firstname)
     {
         $this->firstname = $firstname;
     }
@@ -107,7 +112,7 @@ class User
         return $this->firstname;
     }
 
-    public function setLastname(string $lastname)
+    public function setLastname($lastname)
     {
         $this->lastname = $lastname;
     }
@@ -117,7 +122,7 @@ class User
         return $this->lastname;
     }
 
-    public function setEmail(string $email)
+    public function setEmail($email)
     {
         $this->email = $email;
     }
@@ -127,7 +132,12 @@ class User
         return $this->email;
     }
 
-    public function setGroupId(int $groupId)
+    public function setIp($ip)
+    {
+        return $this->ip;
+    }
+
+    public function setGroupId($groupId)
     {
         $this->groupId = $groupId;
     }
@@ -137,7 +147,7 @@ class User
         return $this->groupId;
     }
 
-    public function setImage(string $image)
+    public function setImage($image)
     {
         $this->image = $image;
     }
@@ -152,18 +162,27 @@ class User
         return $this->status;
     }
 
-    public function setStatus(boolean $status)
+    public function setStatus($status)
     {
         $this->status = $status;
     }
 
-    public function setCode(string $code)
+    public function setCode($code)
     {
         $this->code = $code;
     }
 
+    public function getSalt()
+    {
+        return $this->salt;
+    }
 
-    public function setPassword(string $password)
+    public function getHashedPassword()
+    {
+        return $this->password;
+    }
+
+    public function setPassword($password)
     {
         $hashedPassword = sha1(
             $this->salt . sha1(
