@@ -20,7 +20,6 @@ class ControllerExtensionPayment extends Controller {
         if ($this->validate()) {
             $this->model_extension_extension->install('payment', $this->request->get['extension']);
 
-
             $route = 'payment/' . $this->request->get['extension'];
             $this->addPermission($route);
 

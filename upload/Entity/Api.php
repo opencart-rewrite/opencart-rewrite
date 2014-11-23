@@ -69,7 +69,7 @@ class Api
     {
         return $this->username;
     }
-    
+
     public function setUsername($username)
     {
         $this->username = $username;

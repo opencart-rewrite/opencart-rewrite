@@ -303,7 +303,7 @@ class ControllerSaleOrder extends Controller {
 
         $data['invoice'] = $this->url->link('sale/order/invoice', 'token=' . $this->session->data['token'], 'SSL');
         $data['shipping'] = $this->url->link('sale/order/shipping', 'token=' . $this->session->data['token'], 'SSL');
-        $data['insert'] = $this->url->link('sale/order/add', 'token=' . $this->session->data['token'], 'SSL');
+        $data['add'] = $this->url->link('sale/order/add', 'token=' . $this->session->data['token'], 'SSL');
 
         $data['orders'] = array();
 
@@ -364,7 +364,7 @@ class ControllerSaleOrder extends Controller {
 
         $data['button_invoice_print'] = $this->language->get('button_invoice_print');
         $data['button_shipping_print'] = $this->language->get('button_shipping_print');
-        $data['button_insert'] = $this->language->get('button_insert');
+        $data['button_add'] = $this->language->get('button_add');
         $data['button_edit'] = $this->language->get('button_edit');
         $data['button_delete'] = $this->language->get('button_delete');
         $data['button_filter'] = $this->language->get('button_filter');
@@ -1485,7 +1485,7 @@ class ControllerSaleOrder extends Controller {
 
             // Set up the API session
             if ($this->user->hasPermission('modify', 'sale/order')) {
-                $this->load->model('user/api');
+
 
                 $apiId = $this->config->get('config_api_id');
                 $api_info = $this->em

@@ -64,7 +64,7 @@ class UserGroup
 
     /**
      *
-     */ 
+     */
     public function addPermission($type, $route)
     {
         $this->permission[$type][] = $route;

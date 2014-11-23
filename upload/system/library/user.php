@@ -46,6 +46,7 @@ class User {
 
         $this->user_id = $user->getId();
         $this->username = $user->getUserName();
+        $this->user_group_id = $user->getGroupId();
 
         $this->_setPermissions($user->getGroupId());
 
@@ -77,6 +78,10 @@ class User {
 
     public function getUserName() {
         return $this->username;
+    }
+
+    public function getGroupId() {
+        return $this->user_group_id;
     }
 
     /**

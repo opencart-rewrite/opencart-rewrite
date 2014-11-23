@@ -183,7 +183,7 @@ class UserRepository extends EntityRepository
 
     /**
      * Try to login with user and return it if login successful
-     * 
+     *
      * @param string $username
      * @param string $password
      *

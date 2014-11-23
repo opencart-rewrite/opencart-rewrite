@@ -158,7 +158,7 @@ class ControllerUserUser extends Controller {
             'href' => $this->url->link('user/user', 'token=' . $this->session->data['token'] . $url, 'SSL')
         );
 
-        $data['insert'] = $this->url->link('user/user/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
+        $data['add'] = $this->url->link('user/user/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
         $data['delete'] = $this->url->link('user/user/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
         $data['users'] = array();
@@ -205,7 +205,7 @@ class ControllerUserUser extends Controller {
         $data['column_date_added'] = $this->language->get('column_date_added');
         $data['column_action'] = $this->language->get('column_action');
 
-        $data['button_insert'] = $this->language->get('button_insert');
+        $data['button_add'] = $this->language->get('button_add');
         $data['button_edit'] = $this->language->get('button_edit');
         $data['button_delete'] = $this->language->get('button_delete');
 
@@ -420,7 +420,6 @@ class ControllerUserUser extends Controller {
 
         if (isset($this->request->post['email'])) {
             $data['email'] = $this->request->post['email'];
-        } elseif (!empty($user_info)) {
         } elseif (!is_null($user)) {
             $data['email'] = $user->getEmail();
         } else {

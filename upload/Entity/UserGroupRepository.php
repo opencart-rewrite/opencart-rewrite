@@ -45,10 +45,10 @@ class UserGroupRepository extends EntityRepository
             ->getArrayResult();
 
         return empty($groupArray) ?
-            null : 
+            null :
             $groupArray[0]
         ;
-        
+
     }
 
     /**

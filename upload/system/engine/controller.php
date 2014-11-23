@@ -26,13 +26,13 @@ abstract class Controller {
     protected function addPermission($route)
     {
         $this->em->getRepository('Entity\UserGroup')->addPermission(
-            $this->user->getId(),
+            $this->user->getGroupId(),
             'access',
             $route
         );
 
         $this->em->getRepository('Entity\UserGroup')->addPermission(
-            $this->user->getId(),
+            $this->user->getGroupId(),
             'modify',
             $route
         );

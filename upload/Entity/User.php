@@ -96,7 +96,7 @@ class User
     {
         return $this->username;
     }
-    
+
     public function setUsername($username)
     {
         $this->username = $username;
