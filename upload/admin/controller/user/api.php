@@ -2,12 +2,18 @@
 class ControllerUserApi extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\Api'
+        );
+    }
+
     public function index() {
         $this->load->language('user/api');
 
         $this->document->setTitle($this->language->get('heading_title'));
-
-        $this->load->model('user/api');
 
         $this->getList();
     }
@@ -17,10 +23,14 @@ class ControllerUserApi extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/api');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_api->addApi($this->request->post);
+
+            $post = $this->request->post;
+            $this->repository->add(
+                $post['username'],
+                $post['password'],
+                $post['status'] === '1'
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -49,10 +59,16 @@ class ControllerUserApi extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/api');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_user_api->editApi($this->request->get['api_id'], $this->request->post);
+            $post = $this->request->post;
+            $this->repository->edit(
+                $this->request->get['api_id'],
+                $post['username'],
+                $post['password'],
+                $post['status'] === '1'
+            );
+
+
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -81,11 +97,9 @@ class ControllerUserApi extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('user/api');
-
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $api_id) {
-                $this->model_user_api->deleteApi($api_id);
+                $this->repository->delete($api_id);
             }
 
             $this->session->data['success'] = $this->language->get('text_success');
@@ -160,16 +174,14 @@ class ControllerUserApi extends Controller {
 
         $data['apis'] = array();
 
-        $filter_data = array(
-            'sort'  => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-            'limit' => $this->config->get('config_limit_admin')
+        $user_total = $this->repository->count();
+
+        $results = $this->repository->findAllPaginatedAsArray(
+            ($page - 1) * $this->config->get('config_limit_admin'),
+            $this->config->get('config_limit_admin'),
+            $sort,
+            $order
         );
-
-        $user_total = $this->model_user_api->getTotalApis();
-
-        $results = $this->model_user_api->getApisAsArray($filter_data);
 
         foreach ($results as $result) {
             $apiId = $result['id'];
@@ -348,7 +360,7 @@ class ControllerUserApi extends Controller {
 
         if (isset($this->request->get['api_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
             $apiId = $this->request->get['api_id'];
-            $api_info = $this->model_user_api->getApiAsArray($apiId);
+            $api_info = $this->repository->findAsArray($apiId);
         }
 
         if (isset($this->request->post['username'])) {
