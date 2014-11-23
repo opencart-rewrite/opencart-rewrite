@@ -22,10 +22,9 @@ class ControllerExtensionShipping extends Controller {
         if ($this->validate()) {
             $this->model_extension_extension->install('shipping', $this->request->get['extension']);
 
-            $this->load->model('user/user_group');
 
-            $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'shipping/' . $this->request->get['extension']);
-            $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'shipping/' . $this->request->get['extension']);
+            $route = 'shipping/' . $this->request->get['extension'];
+            $this->addPermission($route);
 
             // Call install method if it exsits
             $this->load->controller('shipping/' . $this->request->get['extension'] . '/install');

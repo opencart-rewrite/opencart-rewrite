@@ -49,8 +49,7 @@ class ControllerFeedOpenbaypro extends Controller {
         $this->load->model('setting/setting');
         $this->load->model('extension/event');
 
-        $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'extension/openbay');
-        $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'extension/openbay');
+        $this->addPermission('extension/openbay');
 
         $settings = $this->model_setting_setting->getSetting('openbaypro');
         $settings['openbaypro_menu'] = 1;

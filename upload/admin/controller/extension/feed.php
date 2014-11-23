@@ -22,10 +22,8 @@ class ControllerExtensionFeed extends Controller {
         if ($this->validate()) {
             $this->model_extension_extension->install('feed', $this->request->get['extension']);
 
-            $this->load->model('user/user_group');
-
-            $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'feed/' . $this->request->get['extension']);
-            $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'feed/' . $this->request->get['extension']);
+            $route = 'feed/' . $this->request->get['extension'];
+            $this->addPermission($route);
 
             // Call install method if it exsits
             $this->load->controller('feed/' . $this->request->get['extension'] . '/install');

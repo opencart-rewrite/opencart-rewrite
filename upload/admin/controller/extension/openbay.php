@@ -16,10 +16,8 @@ class ControllerExtensionOpenbay extends Controller {
 
             $this->session->data['success'] = $this->language->get('text_install_success');
 
-            $this->load->model('user/user_group');
-
-            $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'openbay/' . $this->request->get['extension']);
-            $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'openbay/' . $this->request->get['extension']);
+            $route = 'openbay/' . $this->request->get['extension'];
+            $this->addPermission($route);
 
             require_once(DIR_APPLICATION . 'controller/openbay/' . $this->request->get['extension'] . '.php');
 
@@ -303,7 +301,6 @@ class ControllerExtensionOpenbay extends Controller {
         $this->load->model('openbay/amazonus_patch');
         $this->load->model('extension/extension');
         $this->load->model('setting/setting');
-        $this->load->model('user/user_group');
         $this->load->model('openbay/version');
 
         $this->model_openbay_ebay_patch->patch();
@@ -319,8 +316,7 @@ class ControllerExtensionOpenbay extends Controller {
 
         if (!in_array('openbay', $installed_modules)) {
             $this->model_extension_extension->install('feed', 'openbay');
-            $this->model_user_user_group->addPermission($this->user->getId(), 'access', 'feed/openbay');
-            $this->model_user_user_group->addPermission($this->user->getId(), 'modify', 'feed/openbay');
+            $this->addPermission('feed/openbay');
         }
 
         sleep(1);

@@ -16,9 +16,10 @@ class ControllerCommonProfile extends Controller {
 
             //TODO replace by something better when we will have
             // UserGroups converted into a doctrine's Entity
-            $this->load->model('user/user_group');
-            $group = $this->model_user_user_group->getUserGroup($user->getGroupId());
-            $data['user_group'] = $group['name'];
+            $group = $this->em->getRepository('Entity\UserGroup')->find(
+                $user->getGroupId()
+            );
+            $data['user_group'] = $group->getName();
 
             $userImage = $user->getImage();
 
