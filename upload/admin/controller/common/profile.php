@@ -1,13 +1,20 @@
 <?php
 class ControllerCommonProfile extends Controller {
+
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\User'
+        );
+    }
+
     public function index() {
         $this->load->language('common/menu');
 
-        $this->load->model('user/user');
-
         $this->load->model('tool/image');
 
-        $user = $this->model_user_user->getUser($this->user->getId());
+        $user = $this->repository->find($this->user->getId());
 
         if ($user) {
             $data['firstname'] = $user->getFirstname();

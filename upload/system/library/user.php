@@ -15,33 +15,39 @@ class User {
         }
         $userId = (int) $this->session->data['user_id'];
 
-        //TODO use a repository for user
-        $user_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "user WHERE user_id = '$userId' AND status = '1'");
+        $user = $this->em->getRepository('Entity\User')->find($userId);
 
-        if (!$user_query->num_rows) {
+        if (is_null($user) || !$user->isActivated()) {
             $this->logout();
             return;
         }
-        $this->user_id = $user_query->row['user_id'];
-        $this->username = $user_query->row['username'];
+        $this->em->getRepository('Entity\User')->updateIp(
+            $userId,
+            $this->request->server['REMOTE_ADDR']
+        );
 
-        $this->db->query("UPDATE " . DB_PREFIX . "user SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE user_id = '$userId'");
+        $this->user_id = $user->getId();
+        $this->username = $user->getUserName();
 
-        $this->_setPermissions($user_query);
+        $this->_setPermissions($user->getGroupId());
     }
 
-    public function login($username, $password) {
-        $user_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "user WHERE username = '" . $this->db->escape($username) . "' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND status = '1'");
+    public function login($username, $password)
+    {
+        $user = $this->em->getRepository('Entity\User')->login(
+            $username,
+            $password
+        );
 
-        if (!$user_query->num_rows) {
+        if (is_null($user)) {
             return false;
         }
-        $this->session->data['user_id'] = $user_query->row['user_id'];
+        $this->session->data['user_id'] = $user->getId();
 
-        $this->user_id = $user_query->row['user_id'];
-        $this->username = $user_query->row['username'];
+        $this->user_id = $user->getId();
+        $this->username = $user->getUserName();
 
-        $this->_setPermissions($user_query);
+        $this->_setPermissions($user->getGroupId());
 
         return true;
     }
@@ -76,10 +82,8 @@ class User {
     /**
      * Set permissions of current user
      */
-    private function _setPermissions($userQuery)
+    private function _setPermissions($groupId)
     {
-        // TODO replace this by a "User" entity
-        $groupId = (int)$userQuery->row['user_group_id'];
         $permissions = $this->em
             ->getRepository('Entity\UserGroup')
             ->findAsArray($groupId)['permission']

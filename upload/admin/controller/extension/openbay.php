@@ -1733,62 +1733,6 @@ class ControllerExtensionOpenbay extends Controller {
             $this->db->query("TRUNCATE `" . DB_PREFIX . "customer_transaction`");
             $this->db->query("TRUNCATE `" . DB_PREFIX . "address`");
 
-            /*
-            if ($this->config->get('ebay_status') == 1) {
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_category`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_category_history`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_image_import`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_listing`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_listing_pending`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_order`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_order_lock`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_payment_method`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_profile`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_setting_option`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_shipping`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_shipping_location`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_shipping_location_exclude`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_stock_reserve`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_template`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_transaction`");
-            }
-            */
-            /*
-            if ($this->config->get('etsy_status') == 1) {
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "etsy_listing`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "etsy_order`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "etsy_order_lock`");
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "etsy_setting_option`");
-            }
-            */
-            /*
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "manufacturer`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "manufacturer_to_store`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "attribute`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "attribute_description`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "attribute_group`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "attribute_group_description`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "ebay_listing`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "category`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "category_description`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "category_to_store`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_to_store`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_description`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_attribute`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_option`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_option_value`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_image`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "product_to_category`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "option`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "option_description`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "option_value`");
-            $this->db->query("TRUNCATE `" . DB_PREFIX . "option_value_description`");
-
-            if ($this->openbay->addonLoad('openstock')) {
-                $this->db->query("TRUNCATE `" . DB_PREFIX . "product_option_relation`");
-            }
-            */
             $this->log->write('Data cleared');
             $json = array('msg' => 'Data cleared');
         }

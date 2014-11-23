@@ -408,10 +408,10 @@ class ControllerUserUserPermission extends Controller {
             $this->error['warning'] = $this->language->get('error_permission');
         }
 
-        $this->load->model('user/user');
-
         foreach ($this->request->post['selected'] as $user_group_id) {
-            $user_total = $this->model_user_user->getTotalUsersByGroupId($user_group_id);
+            $user_total = $this->em->getRepository('Entity\UserGroup')->countByGroupId(
+                $user_group_id
+            );
 
             if ($user_total) {
                 $this->error['warning'] = sprintf($this->language->get('error_user'), $user_total);
