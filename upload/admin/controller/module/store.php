@@ -7,10 +7,10 @@ class ControllerModuleStore extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('extension/module');
+        $this->load->model('setting/setting');
 
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-            $this->model_extension_module->editModule($this->request->get['module_id'], $this->request->post);
+            $this->model_setting_setting->editSetting('store', $this->request->post);
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -22,8 +22,6 @@ class ControllerModuleStore extends Controller {
         $data['text_edit'] = $this->language->get('text_edit');
         $data['text_yes'] = $this->language->get('text_yes');
         $data['text_no'] = $this->language->get('text_no');
-        $data['text_enabled'] = $this->language->get('text_enabled');
-        $data['text_disabled'] = $this->language->get('text_disabled');
 
         $data['entry_admin'] = $this->language->get('entry_admin');
         $data['entry_status'] = $this->language->get('entry_status');
@@ -51,31 +49,23 @@ class ControllerModuleStore extends Controller {
 
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('module/store', 'token=' . $this->session->data['token'] . '&module_id=' . $this->request->get['module_id'], 'SSL')
+            'href' => $this->url->link('module/store', 'token=' . $this->session->data['token'], 'SSL')
         );
 
-        $data['action'] = $this->url->link('module/store', 'token=' . $this->session->data['token'] . '&module_id=' . $this->request->get['module_id'], 'SSL');
+        $data['action'] = $this->url->link('module/store', 'token=' . $this->session->data['token'], 'SSL');
 
         $data['cancel'] = $this->url->link('extension/module', 'token=' . $this->session->data['token'], 'SSL');
 
-        if (isset($this->request->get['module_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $module_info = $this->model_extension_module->getModule($this->request->get['module_id']);
+        if (isset($this->request->post['store_admin'])) {
+            $data['store_admin'] = $this->request->post['store_admin'];
+        } else {
+            $data['store_admin'] = $this->config->get('store_admin');
         }
 
-        if (isset($this->request->post['admin'])) {
-            $data['admin'] = $this->request->post['admin'];
-        } elseif (!empty($module_info)) {
-            $data['admin'] = $module_info['admin'];
+        if (isset($this->request->post['store_status'])) {
+            $data['store_status'] = $this->request->post['store_status'];
         } else {
-            $data['admin'] = '';
-        }
-
-        if (isset($this->request->post['status'])) {
-            $data['status'] = $this->request->post['status'];
-        } elseif (!empty($module_info)) {
-            $data['status'] = $module_info['status'];
-        } else {
-            $data['status'] = '';
+            $data['store_status'] = $this->config->get('store_status');
         }
 
         $data['header'] = $this->load->controller('common/header');

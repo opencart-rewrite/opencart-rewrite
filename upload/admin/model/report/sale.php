@@ -27,7 +27,7 @@ class ModelReportSale extends Model {
         foreach ($this->config->get('config_complete_status') as $order_status_id) {
             $implode[] = "'" . (int)$order_status_id . "'";
         }
-        
+
         $order_data = array();
 
         for ($i = 0; $i < 24; $i++) {
@@ -54,8 +54,8 @@ class ModelReportSale extends Model {
 
         foreach ($this->config->get('config_complete_status') as $order_status_id) {
             $implode[] = "'" . (int)$order_status_id . "'";
-        }        
-        
+        }
+
         $order_data = array();
 
         $date_start = strtotime('-' . date('w') . ' days');
@@ -87,7 +87,7 @@ class ModelReportSale extends Model {
         foreach ($this->config->get('config_complete_status') as $order_status_id) {
             $implode[] = "'" . (int)$order_status_id . "'";
         }
-                
+
         $order_data = array();
 
         for ($i = 1; $i <= date('t'); $i++) {
@@ -117,7 +117,7 @@ class ModelReportSale extends Model {
         foreach ($this->config->get('config_complete_status') as $order_status_id) {
             $implode[] = "'" . (int)$order_status_id . "'";
         }
-                
+
         $order_data = array();
 
         for ($i = 1; $i <= 12; $i++) {

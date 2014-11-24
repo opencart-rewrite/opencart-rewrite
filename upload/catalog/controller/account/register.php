@@ -283,13 +283,13 @@ class ControllerAccountRegister extends Controller {
             } else {
                 $account_custom_field = array();
             }
-            
+
             if (isset($this->request->post['custom_field']['address'])) {
                 $address_custom_field = $this->request->post['custom_field']['address'];
             } else {
                 $address_custom_field = array();
-            }            
-            
+            }
+
             $data['register_custom_field'] = $account_custom_field + $address_custom_field;
         } else {
             $data['register_custom_field'] = array();

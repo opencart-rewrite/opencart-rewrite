@@ -7,10 +7,10 @@ class ControllerModuleInformation extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('extension/module');
+        $this->load->model('setting/setting');
 
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-            $this->model_extension_module->editModule($this->request->get['module_id'], $this->request->post);
+            $this->model_setting_setting->editSetting('information', $this->request->post);
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -20,7 +20,6 @@ class ControllerModuleInformation extends Controller {
         $data['heading_title'] = $this->language->get('heading_title');
 
         $data['text_edit'] = $this->language->get('text_edit');
-
         $data['text_enabled'] = $this->language->get('text_enabled');
         $data['text_disabled'] = $this->language->get('text_disabled');
 
@@ -49,23 +48,17 @@ class ControllerModuleInformation extends Controller {
 
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('module/information', 'token=' . $this->session->data['token'] . '&module_id=' . $this->request->get['module_id'], 'SSL')
+            'href' => $this->url->link('module/information', 'token=' . $this->session->data['token'], 'SSL')
         );
 
-        $data['action'] = $this->url->link('module/information', 'token=' . $this->session->data['token'] . '&module_id=' . $this->request->get['module_id'], 'SSL');
+        $data['action'] = $this->url->link('module/information', 'token=' . $this->session->data['token'], 'SSL');
 
         $data['cancel'] = $this->url->link('extension/module', 'token=' . $this->session->data['token'], 'SSL');
 
-        if (isset($this->request->get['module_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $module_info = $this->model_extension_module->getModule($this->request->get['module_id']);
-        }
-
-        if (isset($this->request->post['status'])) {
-            $data['status'] = $this->request->post['status'];
-        } elseif (!empty($module_info)) {
-            $data['status'] = $module_info['status'];
+        if (isset($this->request->post['information_status'])) {
+            $data['information_status'] = $this->request->post['information_status'];
         } else {
-            $data['status'] = '';
+            $data['information_status'] = $this->config->get('information_status');
         }
 
         $data['header'] = $this->load->controller('common/header');

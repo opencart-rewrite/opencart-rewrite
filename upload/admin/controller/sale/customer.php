@@ -675,7 +675,7 @@ class ControllerSaleCustomer extends Controller {
         $data['text_enabled'] = $this->language->get('text_enabled');
         $data['text_disabled'] = $this->language->get('text_disabled');
         $data['text_yes'] = $this->language->get('text_yes');
-        $data['text_no'] = $this->language->get('text_no');        
+        $data['text_no'] = $this->language->get('text_no');
         $data['text_select'] = $this->language->get('text_select');
         $data['text_none'] = $this->language->get('text_none');
         $data['text_loading'] = $this->language->get('text_loading');

@@ -27,9 +27,9 @@ class ControllerModuleEbay extends Controller {
                 }
 
                 $data['products'][] = array(
-                    'thumb' => $image, 
-                    'name'  => base64_decode($product['Title']), 
-                    'price' => $this->currency->format($product['priceGross']), 
+                    'thumb' => $image,
+                    'name'  => base64_decode($product['Title']),
+                    'price' => $this->currency->format($product['priceGross']),
                     'href' => (string)$product['link']
                 );
             }

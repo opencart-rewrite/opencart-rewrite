@@ -389,7 +389,6 @@ class ControllerUserUser extends Controller {
             ->findAllPaginated()
         ;
 
-
         if (isset($this->request->post['password'])) {
             $data['password'] = $this->request->post['password'];
         } else {

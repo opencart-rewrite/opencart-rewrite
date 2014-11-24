@@ -123,6 +123,7 @@ class ControllerShippingFedex extends Controller {
         } else {
             $data['error_dimension'] = '';
         }
+
         $data['breadcrumbs'] = array();
 
         $data['breadcrumbs'][] = array(
@@ -294,6 +295,7 @@ class ControllerShippingFedex extends Controller {
             'text'  => $this->language->get('text_standard_overnight'),
             'value' => 'STANDARD_OVERNIGHT'
         );
+
 
         if (isset($this->request->post['fedex_length'])) {
             $data['fedex_length'] = $this->request->post['fedex_length'];

@@ -9,20 +9,20 @@ class ControllerExtensionModule extends Controller {
 
         $this->load->model('extension/module');
 
+        $this->load->model('extension/module');
+
         $this->getList();
     }
 
-    public function add() {
+    public function install() {
         $this->load->language('extension/module');
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('extension/module');
+        $this->load->model('extension/extension');
 
-        if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_extension_module->addModule($this->request->post);
-
-            $this->load->controller('module/' . $this->request->post['code'] . '/install');
+        if ($this->validate()) {
+            $this->model_extension_extension->install('module', $this->request->get['extension']);
 
             // Add permissions
             $route = 'module/' . $this->request->post['code'];
@@ -36,6 +36,30 @@ class ControllerExtensionModule extends Controller {
         $this->getList();
     }
 
+    public function uninstall() {
+        $this->load->language('extension/module');
+
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $this->load->model('extension/extension');
+
+        if ($this->validate()) {
+            $this->model_extension_extension->uninstall('module', $this->request->get['extension']);
+
+            $this->load->model('setting/setting');
+
+            $this->model_setting_setting->deleteSetting($this->request->get['extension']);
+
+            // Call uninstall method if it exsits
+            $this->load->controller('module/' . $this->request->get['extension'] . '/uninstall');
+
+            $this->session->data['success'] = $this->language->get('text_success');
+
+            $this->response->redirect($this->url->link('extension/module', 'token=' . $this->session->data['token'], 'SSL'));
+        }
+
+    }
+
     public function delete() {
         $this->load->language('extension/module');
 
@@ -45,7 +69,7 @@ class ControllerExtensionModule extends Controller {
 
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $module_id) {
-                $this->model_extension_module->deleteModule($module_id);
+                $this->model_extension_module->deleteModuleByCode($module_id);
             }
 
             $this->session->data['success'] = $this->language->get('text_success');
@@ -72,7 +96,6 @@ class ControllerExtensionModule extends Controller {
         $data['heading_title'] = $this->language->get('heading_title');
 
         $data['text_layout'] = sprintf($this->language->get('text_layout'), $this->url->link('design/layout', 'token=' . $this->session->data['token'], 'SSL'));
-        $data['text_add'] = $this->language->get('text_add');
         $data['text_list'] = $this->language->get('text_list');
         $data['text_no_results'] = $this->language->get('text_no_results');
         $data['text_confirm'] = $this->language->get('text_confirm');
@@ -80,29 +103,15 @@ class ControllerExtensionModule extends Controller {
         $data['column_name'] = $this->language->get('column_name');
         $data['column_action'] = $this->language->get('column_action');
 
-        $data['entry_code'] = $this->language->get('entry_code');
-        $data['entry_name'] = $this->language->get('entry_name');
-
-        $data['button_module_add'] = $this->language->get('button_module_add');
-        $data['button_delete'] = $this->language->get('button_delete');
         $data['button_edit'] = $this->language->get('button_edit');
+        $data['button_delete'] = $this->language->get('button_delete');
+        $data['button_install'] = $this->language->get('button_install');
+        $data['button_uninstall'] = $this->language->get('button_uninstall');
 
         if (isset($this->error['warning'])) {
             $data['error_warning'] = $this->error['warning'];
         } else {
             $data['error_warning'] = '';
-        }
-
-        if (isset($this->error['code'])) {
-            $data['error_code'] = $this->error['code'];
-        } else {
-            $data['error_code'] = '';
-        }
-
-        if (isset($this->error['name'])) {
-            $data['error_name'] = $this->error['name'];
-        } else {
-            $data['error_name'] = '';
         }
 
         if (isset($this->session->data['success'])) {
@@ -113,23 +122,21 @@ class ControllerExtensionModule extends Controller {
             $data['success'] = '';
         }
 
-        if (isset($this->request->post['code'])) {
-            $data['code'] = $this->request->post['code'];
-        } else {
-            $data['code'] = '';
-        }
-
-        if (isset($this->request->post['name'])) {
-            $data['name'] = $this->request->post['name'];
-        } else {
-            $data['name'] = '';
-        }
-
-        $data['add'] = $this->url->link('extension/module/add', 'token=' . $this->session->data['token'], 'SSL');
         $data['delete'] = $this->url->link('extension/module/delete', 'token=' . $this->session->data['token'], 'SSL');
 
-        // List all extensions
-        $data['modules'] = array();
+        $extensions = $this->model_extension_extension->getInstalled('module');
+
+        foreach ($extensions as $key => $value) {
+            if (!file_exists(DIR_APPLICATION . 'controller/module/' . $value . '.php')) {
+                $this->model_extension_extension->uninstall('module', $value);
+
+                unset($extensions[$key]);
+
+                $this->model_extension_module->deleteModulesByCode($value);
+            }
+        }
+
+        $data['extensions'] = array();
 
         $files = glob(DIR_APPLICATION . 'controller/module/*.php');
 
@@ -139,40 +146,27 @@ class ControllerExtensionModule extends Controller {
 
                 $this->load->language('module/' . $extension);
 
-                $data['modules'][$extension] = array(
-                    'name' => $this->language->get('heading_title'),
-                    'code' => $extension
-                );
-            }
-        }
+                $module_data = array();
 
-        // List all modules
-        $data['extensions'] = array();
+                $modules = $this->model_extension_module->getModulesByCode($extension);
 
-        $modules = $this->model_extension_module->getModules();
-
-        foreach ($modules as $module) {
-            if (isset($data['modules'][$module['code']])) {
-                // Add group if not set.
-                if (!isset($data['extensions'][$module['code']])) {
-                    $data['extensions'][$module['code']]['name'] = $data['modules'][$module['code']]['name'];
+                foreach ($modules as $module) {
+                    $module_data[] = array(
+                        'module_id' => $module['module_id'],
+                        'name'      => $module['name'],
+                        'edit'      => $this->url->link('module/' . $extension, 'token=' . $this->session->data['token'] . '&module_id=' . $module['module_id'], 'SSL')
+                    );
                 }
 
-                $data['extensions'][$module['code']]['module'][] = array(
-                    'module_id' => $module['module_id'],
-                    'name'      => $module['name'],
-                    'edit'      => $this->url->link('module/' . $module['code'], 'token=' . $this->session->data['token'] . '&module_id=' . $module['module_id'], 'SSL')
+                $data['extensions'][] = array(
+                    'name'      => $this->language->get('heading_title'),
+                    'module'    => $module_data,
+                    'install'   => $this->url->link('extension/module/install', 'token=' . $this->session->data['token'] . '&extension=' . $extension, 'SSL'),
+                    'uninstall' => $this->url->link('extension/module/uninstall', 'token=' . $this->session->data['token'] . '&extension=' . $extension, 'SSL'),
+                    'installed' => in_array($extension, $extensions),
+                    'edit'      => $this->url->link('module/' . $extension, 'token=' . $this->session->data['token'], 'SSL')
                 );
-            } else {
-                // If file for extension is missing we delete the DB entry.
-                $this->model_extension_module->deleteModule($module['module_id']);
             }
-        }
-
-        if (isset($this->request->post['selected'])) {
-            $data['selected'] = (array)$this->request->post['selected'];
-        } else {
-            $data['selected'] = array();
         }
 
         $data['header'] = $this->load->controller('common/header');
@@ -182,17 +176,9 @@ class ControllerExtensionModule extends Controller {
         $this->response->setOutput($this->load->view('extension/module.tpl', $data));
     }
 
-    protected function validateForm() {
+    protected function validate() {
         if (!$this->user->hasPermission('modify', 'extension/module')) {
             $this->error['warning'] = $this->language->get('error_permission');
-        }
-
-        if (!$this->request->post['code']) {
-            $this->error['code'] = $this->language->get('error_code');
-        }
-
-        if ((utf8_strlen($this->request->post['name']) < 3) || (utf8_strlen($this->request->post['name']) > 64)) {
-            $this->error['name'] = $this->language->get('error_name');
         }
 
         return !$this->error;
