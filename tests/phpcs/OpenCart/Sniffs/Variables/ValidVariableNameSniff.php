@@ -41,18 +41,18 @@ class OpenCart_Sniffs_Variables_ValidVariableNameSniff extends PHP_CodeSniffer_S
                         T_COMMENT,
                        );
 
-	/**
-	 * Regex to match valid underscore names for variables
-	 *
-	 * @var string
-	 */
-	private static $underscore_var = '/^(_|[a-z](?:_?[a-z0-9]+)*)$/';
+    /**
+     * Regex to match valid underscore names for variables
+     *
+     * @var string
+     */
+    private static $underscore_var = '/^(_|[a-z](?:_?[a-z0-9]+)*)$/';
 
-	/**
-	 * Complementary regex to just exclude camel casing
-	 * @var string
-	 */
-	private static $camelcase = '/[a-z][A-Z]/';
+    /**
+     * Complementary regex to just exclude camel casing
+     * @var string
+     */
+    private static $camelcase = '/[a-z][A-Z]/';
 
     /**
      * Processes this test, when one of its tokens is encountered.
@@ -84,14 +84,14 @@ class OpenCart_Sniffs_Variables_ValidVariableNameSniff extends PHP_CodeSniffer_S
             return;
         }
 
-		if ($tokens[$stackPtr - 1]['code'] === T_PAAMAYIM_NEKUDOTAYIM) {
-			// static vars just ensure no camelcase (caps allowed)
-			if (preg_match(self::$camelcase, $varName)) {
-				$error = 'Variable "%s" is not in valid underscore format';
-				$phpcsFile->addError($error, $stackPtr, 'NotUnderscore', array($varName));
-			}
-			return;
-		}
+        if ($tokens[$stackPtr - 1]['code'] === T_PAAMAYIM_NEKUDOTAYIM) {
+            // static vars just ensure no camelcase (caps allowed)
+            if (preg_match(self::$camelcase, $varName)) {
+                $error = 'Variable "%s" is not in valid underscore format';
+                $phpcsFile->addError($error, $stackPtr, 'NotUnderscore', array($varName));
+            }
+            return;
+        }
 
         $objOperator = $phpcsFile->findNext(array(T_WHITESPACE), ($stackPtr + 1), null, true);
         if ($tokens[$objOperator]['code'] === T_OBJECT_OPERATOR) {
@@ -103,18 +103,18 @@ class OpenCart_Sniffs_Variables_ValidVariableNameSniff extends PHP_CodeSniffer_S
                     $objVarName = $tokens[$var]['content'];
 
                     if (preg_match(self::$underscore_var, $objVarName) === 0) {
-						$phpcsFile->addError(
-							'Variable "%s" is not in valid underscore format',
-							$var,
-							'NotUnderscore',
-							array($objVarName)
-						);
+                        $phpcsFile->addError(
+                            'Variable "%s" is not in valid underscore format',
+                            $var,
+                            'NotUnderscore',
+                            array($objVarName)
+                        );
                     }
                 }//end if
             }//end if
         }//end if
 
-		if (preg_match(self::$underscore_var, $varName) === 0) {
+        if (preg_match(self::$underscore_var, $varName) === 0) {
             $error = 'Variable "%s" is not in valid underscore format';
             $phpcsFile->addError($error, $stackPtr, 'NotUnderscore', array($varName));
         }
@@ -144,10 +144,10 @@ class OpenCart_Sniffs_Variables_ValidVariableNameSniff extends PHP_CodeSniffer_S
 
         $errorData = array($varName);
 
-		if (
-			($memberProps['is_static'] && preg_match(self::$camelcase, $varName))
-			|| (!$memberProps['is_static'] && preg_match(self::$underscore_var, $varName) === 0)
-		) {
+        if (
+            ($memberProps['is_static'] && preg_match(self::$camelcase, $varName))
+            || (!$memberProps['is_static'] && preg_match(self::$underscore_var, $varName) === 0)
+        ) {
             $error = 'Variable "%s" is not in valid underscore format';
             $phpcsFile->addError($error, $stackPtr, 'MemberNotUnderscore', $errorData);
         }

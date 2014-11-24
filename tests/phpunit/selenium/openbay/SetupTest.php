@@ -1,97 +1,97 @@
 <?php
 class OpenbaySetupTest extends OpenCartSeleniumTest {
-	private $moduleInstalled = false;
+    private $moduleInstalled = false;
 
-	/**
-	 * @before
-	 */
-	protected function before() {
-		$this->setBrowser('firefox');
-		$this->setBrowserUrl(HTTP_SERVER);
-	}
+    /**
+     * @before
+     */
+    protected function before() {
+        $this->setBrowser('firefox');
+        $this->setBrowserUrl(HTTP_SERVER);
+    }
 
-	/**
-	 * @after
-	 */
-	protected function completeTest() {
+    /**
+     * @after
+     */
+    protected function completeTest() {
 
-	}
+    }
 
-	public function testSetup() {
-		if ($this->moduleInstalled === false) {
-			$this->url("admin/");
+    public function testSetup() {
+        if ($this->moduleInstalled === false) {
+            $this->url("admin/");
 
-			$this->byCssSelector('input[name="username"]')->click();
-			$this->keys(ADMIN_USERNAME);
+            $this->byCssSelector('input[name="username"]')->click();
+            $this->keys(ADMIN_USERNAME);
 
-			$this->byCssSelector('input[name="password"]')->click();
-			$this->keys(ADMIN_PASSWORD);
+            $this->byCssSelector('input[name="password"]')->click();
+            $this->keys(ADMIN_PASSWORD);
 
-			$this->byCssSelector('button[type="submit"]')->click();
+            $this->byCssSelector('button[type="submit"]')->click();
 
-			$this->moduleInstalled = true;
+            $this->moduleInstalled = true;
 
-			$this->waitToLoad('Dashboard');
+            $this->waitToLoad('Dashboard');
 
-			// Installing the payment module
-			$this->clickOnElement('button-menu');
+            // Installing the payment module
+            $this->clickOnElement('button-menu');
 
-			$this->waitToAppearAndClick('#extension a');
-			$this->waitToAppearAndClick('#extension li:nth-child(3) a');
+            $this->waitToAppearAndClick('#extension a');
+            $this->waitToAppearAndClick('#extension li:nth-child(3) a');
 
-			$this->waitToLoad('Modules');
+            $this->waitToLoad('Modules');
 
-			$i = 1;
+            $i = 1;
 
-			for ( ; ; $i++) {
-				$element = $this->byCssSelector(".table-striped tbody tr:nth-child($i) td:first-child");
+            for ( ; ; $i++) {
+                $element = $this->byCssSelector(".table-striped tbody tr:nth-child($i) td:first-child");
 
-				if ($element->text() == 'OpenBay Pro') {
-					break;
-				}
-			}
+                if ($element->text() == 'OpenBay Pro') {
+                    break;
+                }
+            }
 
-			$this->waitToAppearAndClick(".table-striped tbody tr:nth-child($i) td:last-child a.btn-success");
+            $this->waitToAppearAndClick(".table-striped tbody tr:nth-child($i) td:last-child a.btn-success");
 
-			$this->waitToLoad('Modules', 50000);
+            $this->waitToLoad('Modules', 50000);
 
-			// Go to the OpenBay Pro dashboard
-			$this->waitToAppearAndClick('#extension li:nth-child(8) a');
-			$this->waitToAppearAndClick('#extension li:nth-child(8) li:first-child a');
+            // Go to the OpenBay Pro dashboard
+            $this->waitToAppearAndClick('#extension li:nth-child(8) a');
+            $this->waitToAppearAndClick('#extension li:nth-child(8) li:first-child a');
 
-			$this->waitToLoad('OpenBay Pro', 50000);
+            $this->waitToLoad('OpenBay Pro', 50000);
 
-			$this->byCssSelector('#button-install-ebay')->click();
+            $this->byCssSelector('#button-install-ebay')->click();
 
-			$this->waitToLoad('OpenBay Pro', 50000);
+            $this->waitToLoad('OpenBay Pro', 50000);
 
-			$this->byCssSelector('#button-edit-ebay')->click();
+            $this->byCssSelector('#button-edit-ebay')->click();
 
-			$this->waitToLoad('Dashboard', 50000);
+            $this->waitToLoad('Dashboard', 50000);
 
-			$this->byCssSelector('#settings-link')->click();
+            $this->byCssSelector('#settings-link')->click();
 
-			$this->waitToLoad('Marketplace settings', 50000);
+            $this->waitToLoad('Marketplace settings', 50000);
 
-			$this->byCssSelector('#ebay-status option[value="1"]')->click();
+            $this->byCssSelector('#ebay-status option[value="1"]')->click();
 
-			$this->clickOnElement('ebay-token');
-			$this->keys(OPENBAY_EBAY_TOKEN);
+            $this->clickOnElement('ebay-token');
+            $this->keys(OPENBAY_EBAY_TOKEN);
 
-			$this->clickOnElement('ebay-secret');
-			$this->keys(OPENBAY_EBAY_SECRET);
+            $this->clickOnElement('ebay-secret');
+            $this->keys(OPENBAY_EBAY_SECRET);
 
-			$this->clickOnElement('ebay-string1');
-			$this->keys(OPENBAY_EBAY_ENC1);
+            $this->clickOnElement('ebay-string1');
+            $this->keys(OPENBAY_EBAY_ENC1);
 
-			$this->clickOnElement('ebay-string2');
-			$this->keys(OPENBAY_EBAY_ENC2);
+            $this->clickOnElement('ebay-string2');
+            $this->keys(OPENBAY_EBAY_ENC2);
 
-			$this->byCssSelector('button[type="submit"]')->click();
-		}
-	}
+            $this->byCssSelector('button[type="submit"]')->click();
+        }
+    }
 
-	public function installEbay() {
+    public function installEbay() {
 
-	}
+    }
 }

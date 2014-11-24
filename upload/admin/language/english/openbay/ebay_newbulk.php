@@ -1,8 +1,8 @@
 <?php
 //Heading
-$_['heading_title']               	= 'New listings';
-$_['text_ebay']               		= 'eBay';
-$_['text_openbay']               	= 'Openbay Pro';
+$_['heading_title']                   = 'New listings';
+$_['text_ebay']                       = 'eBay';
+$_['text_openbay']                   = 'Openbay Pro';
 
 // Buttons
 $_['text_none']                     = 'None';
@@ -13,16 +13,16 @@ $_['text_submit']                   = 'Submit';
 $_['text_features']                 = 'Features';
 $_['text_catalog']                  = 'Select catalog';
 $_['text_catalog_search']           = 'Search catalog';
-$_['text_search_term']           	= 'Search term';
-$_['text_close']           			= 'Close';
-$_['text_bulk']           			= 'Create new listings in bulk';
+$_['text_search_term']               = 'Search term';
+$_['text_close']                       = 'Close';
+$_['text_bulk']                       = 'Create new listings in bulk';
 
 //Form options / text
 $_['text_pixels']                   = 'Pixels';
 $_['text_other']                    = 'Other';
 
 //Profile names
-$_['text_profile']            		= 'Profiles';
+$_['text_profile']                    = 'Profiles';
 $_['text_profile_theme']            = 'Theme profile';
 $_['text_profile_shipping']         = 'Shipping profile';
 $_['text_profile_returns']          = 'Returns profile';
@@ -55,9 +55,9 @@ $_['text_esc_key']                  = 'The splash page has been hidden but may n
 $_['text_loading_categories']       = 'Loading categories';
 $_['text_loading_condition']        = 'Loading product conditions';
 $_['text_loading_duration']         = 'Loading listing durations';
-$_['text_total_fee']         		= 'Total fees';
-$_['text_category_choose']         	= 'Find category';
-$_['text_suggested']         		= 'Suggested categories';
+$_['text_total_fee']                 = 'Total fees';
+$_['text_category_choose']             = 'Find category';
+$_['text_suggested']                 = 'Suggested categories';
 
 //Errors
 $_['text_error_ship_profile']       = 'You need to have a default shipping profile set up';
@@ -69,4 +69,4 @@ $_['text_error_stock']              = 'Some items are not in stock and have been
 $_['text_error_no_product']         = 'There is no eligible products selected to use the bulk upload feature';
 $_['text_error_reverify']           = 'There was an error, you should edit and re-verify the items';
 $_['error_missing_settings']   = 'You cannot bulk list items until you syncronise your eBay settings';
-$_['text_error_no_selection']   	= 'You must select at least 1 item to list';
+$_['text_error_no_selection']       = 'You must select at least 1 item to list';
