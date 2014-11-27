@@ -118,6 +118,7 @@ class UserRepository extends EntityRepository
         $possibleOrderBy = array(
             'username',
             'status',
+            //TODO: check if it's not "dateAdded"
             'date_added'
         );
 

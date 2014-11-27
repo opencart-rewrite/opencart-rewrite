@@ -2,12 +2,20 @@
 class ControllerCatalogCategory extends Controller {
     private $error = array();
 
+    public function __construct($registry)
+    {
+        parent::__construct($registry);
+        $this->repository = $registry->get('em')->getRepository(
+            'Entity\Category'
+        );
+        $this->repository->setEventManager($registry->get('event'));
+        $this->repository->setCacheManager($registry->get('cache'));
+    }
+
     public function index() {
         $this->load->language('catalog/category');
 
         $this->document->setTitle($this->language->get('heading_title'));
-
-        $this->load->model('catalog/category');
 
         $this->getList();
     }
@@ -17,10 +25,9 @@ class ControllerCatalogCategory extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('catalog/category');
 
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_catalog_category->addCategory($this->request->post);
+            $this->repository->add($this->request->post);
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -49,10 +56,11 @@ class ControllerCatalogCategory extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('catalog/category');
-
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-            $this->model_catalog_category->editCategory($this->request->get['category_id'], $this->request->post);
+            $this->repository->edit(
+                $this->request->get['category_id'],
+                $this->request->post
+            );
 
             $this->session->data['success'] = $this->language->get('text_success');
 
@@ -81,11 +89,9 @@ class ControllerCatalogCategory extends Controller {
 
         $this->document->setTitle($this->language->get('heading_title'));
 
-        $this->load->model('catalog/category');
-
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $category_id) {
-                $this->model_catalog_category->deleteCategory($category_id);
+                $this->repository->delete($category_id);
             }
 
             $this->session->data['success'] = $this->language->get('text_success');
@@ -105,24 +111,6 @@ class ControllerCatalogCategory extends Controller {
             }
 
             $this->response->redirect($this->url->link('catalog/category', 'token=' . $this->session->data['token'] . $url, 'SSL'));
-        }
-
-        $this->getList();
-    }
-
-    public function repair() {
-        $this->load->language('catalog/category');
-
-        $this->document->setTitle($this->language->get('heading_title'));
-
-        $this->load->model('catalog/category');
-
-        if ($this->validateRepair()) {
-            $this->model_catalog_category->repairCategories();
-
-            $this->session->data['success'] = $this->language->get('text_success');
-
-            $this->response->redirect($this->url->link('catalog/category', 'token=' . $this->session->data['token'], 'SSL'));
         }
 
         $this->getList();
@@ -179,24 +167,23 @@ class ControllerCatalogCategory extends Controller {
 
         $data['categories'] = array();
 
-        $filter_data = array(
-            'sort'  => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-            'limit' => $this->config->get('config_limit_admin')
+        $category_total = $this->repository->count();
+
+
+        $results = $this->repository->getCategoriesPaginated(
+            ($page - 1) * $this->config->get('config_limit_admin'),
+            $this->config->get('config_limit_admin'),
+            $sort,
+            $order
         );
-
-        $category_total = $this->model_catalog_category->getTotalCategories();
-
-        $results = $this->model_catalog_category->getCategories($filter_data);
 
         foreach ($results as $result) {
             $data['categories'][] = array(
-                'category_id' => $result['category_id'],
+                'category_id' => $result['id'],
                 'name'        => $result['name'],
-                'sort_order'  => $result['sort_order'],
-                'edit'        => $this->url->link('catalog/category/edit', 'token=' . $this->session->data['token'] . '&category_id=' . $result['category_id'] . $url, 'SSL'),
-                'delete'      => $this->url->link('catalog/category/delete', 'token=' . $this->session->data['token'] . '&category_id=' . $result['category_id'] . $url, 'SSL')
+                'sort_order'  => $result['sortOrder'],
+                'edit'        => $this->url->link('catalog/category/edit', 'token=' . $this->session->data['token'] . '&category_id=' . $result['id'] . $url, 'SSL'),
+                'delete'      => $this->url->link('catalog/category/delete', 'token=' . $this->session->data['token'] . '&category_id=' . $result['id'] . $url, 'SSL')
             );
         }
 
@@ -375,8 +362,10 @@ class ControllerCatalogCategory extends Controller {
 
         $data['cancel'] = $this->url->link('catalog/category', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
-        if (isset($this->request->get['category_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-            $category_info = $this->model_catalog_category->getCategory($this->request->get['category_id']);
+        $categoryId = $this->request->get->get('category_id');
+        if (!is_null($categoryId) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
+            $category_info = $this->repository->getCategory($categoryId);
+
         }
 
         $data['token'] = $this->session->data['token'];
@@ -388,7 +377,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['category_description'])) {
             $data['category_description'] = $this->request->post['category_description'];
         } elseif (isset($this->request->get['category_id'])) {
-            $data['category_description'] = $this->model_catalog_category->getCategoryDescriptions($this->request->get['category_id']);
+            $data['category_description'] = $this->repository->getDescriptions($categoryId);
         } else {
             $data['category_description'] = array();
         }
@@ -396,7 +385,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['path'])) {
             $data['path'] = $this->request->post['path'];
         } elseif (!empty($category_info)) {
-            $data['path'] = $category_info['path'];
+            $data['path'] = $this->repository->getPathString($categoryId);
         } else {
             $data['path'] = '';
         }
@@ -404,7 +393,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['parent_id'])) {
             $data['parent_id'] = $this->request->post['parent_id'];
         } elseif (!empty($category_info)) {
-            $data['parent_id'] = $category_info['parent_id'];
+            $data['parent_id'] = $category_info['parentId'];
         } else {
             $data['parent_id'] = 0;
         }
@@ -414,7 +403,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['category_filter'])) {
             $filters = $this->request->post['category_filter'];
         } elseif (isset($this->request->get['category_id'])) {
-            $filters = $this->model_catalog_category->getCategoryFilters($this->request->get['category_id']);
+            $filters = $this->repository->getFilterIds($categoryId);
         } else {
             $filters = array();
         }
@@ -439,7 +428,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['category_store'])) {
             $data['category_store'] = $this->request->post['category_store'];
         } elseif (isset($this->request->get['category_id'])) {
-            $data['category_store'] = $this->model_catalog_category->getCategoryStores($this->request->get['category_id']);
+            $data['category_store'] = $this->repository->getStoreId($categoryId);
         } else {
             $data['category_store'] = array(0);
         }
@@ -447,7 +436,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['keyword'])) {
             $data['keyword'] = $this->request->post['keyword'];
         } elseif (!empty($category_info)) {
-            $data['keyword'] = $category_info['keyword'];
+            $data['keyword'] = $this->repository->getKeyword($categoryId);
         } else {
             $data['keyword'] = '';
         }
@@ -491,7 +480,7 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['sort_order'])) {
             $data['sort_order'] = $this->request->post['sort_order'];
         } elseif (!empty($category_info)) {
-            $data['sort_order'] = $category_info['sort_order'];
+            $data['sort_order'] = $category_info['sortOrder'];
         } else {
             $data['sort_order'] = 0;
         }
@@ -507,7 +496,10 @@ class ControllerCatalogCategory extends Controller {
         if (isset($this->request->post['category_layout'])) {
             $data['category_layout'] = $this->request->post['category_layout'];
         } elseif (isset($this->request->get['category_id'])) {
-            $data['category_layout'] = $this->model_catalog_category->getCategoryLayouts($this->request->get['category_id']);
+            $layouts = $this->repository->getCategoryLayoutsArray(
+                $categoryId
+            );
+            $data['category_layout'] = $layouts;
         } else {
             $data['category_layout'] = array();
         }
@@ -567,33 +559,18 @@ class ControllerCatalogCategory extends Controller {
         return !$this->error;
     }
 
-    protected function validateRepair() {
-        if (!$this->user->hasPermission('modify', 'catalog/category')) {
-            $this->error['warning'] = $this->language->get('error_permission');
-        }
-
-        return !$this->error;
-    }
-
     public function autocomplete() {
         $json = array();
 
         if (isset($this->request->get['filter_name'])) {
-            $this->load->model('catalog/category');
 
-            $filter_data = array(
-                'filter_name' => $this->request->get['filter_name'],
-                'sort'        => 'name',
-                'order'       => 'ASC',
-                'start'       => 0,
-                'limit'       => 5
+            $results = $this->repository->getAutocompletionCategories(
+                $this->request->get['filter_name']
             );
-
-            $results = $this->model_catalog_category->getCategories($filter_data);
 
             foreach ($results as $result) {
                 $json[] = array(
-                    'category_id' => $result['category_id'],
+                    'category_id' => $result['id'],
                     'name'        => strip_tags(html_entity_decode($result['name'], ENT_QUOTES, 'UTF-8'))
                 );
             }

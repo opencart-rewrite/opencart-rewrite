@@ -477,18 +477,18 @@ class ControllerMarketingCoupon extends Controller {
         }
 
         $this->load->model('catalog/category');
+        $categoryRepository = $this->em->getRepository(
+            'Entity\Category'
+        );
 
         $data['coupon_category'] = array();
 
         foreach ($categories as $category_id) {
-            $category_info = $this->model_catalog_category->getCategory($category_id);
-
-            if ($category_info) {
-                $data['coupon_category'][] = array(
-                    'category_id' => $category_info['category_id'],
-                    'name'        => ($category_info['path'] ? $category_info['path'] . ' &gt; ' : '') . $category_info['name']
-                );
-            }
+            $path = $categoryRepository->getPathString($category_id);
+            $data['coupon_category'][] = array(
+                'category_id' => $category_id,
+                'name'        => $path
+            );
         }
 
         if (isset($this->request->post['date_start'])) {

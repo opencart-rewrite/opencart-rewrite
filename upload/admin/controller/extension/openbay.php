@@ -1037,7 +1037,6 @@ class ControllerExtensionOpenbay extends Controller {
         $this->document->setTitle($this->language->get('heading_title'));
 
         $this->load->model('catalog/product');
-        $this->load->model('catalog/category');
         $this->load->model('catalog/manufacturer');
         $this->load->model('openbay/openbay');
         $this->load->model('tool/image');
@@ -1049,7 +1048,11 @@ class ControllerExtensionOpenbay extends Controller {
             $openstock_installed = false;
         }
 
-        $data['category_list'] = $this->model_catalog_category->getCategories(array());
+
+        $data['category_list'] = $this->em
+            ->getRepository('Entity\Category')
+            ->getCategoriesPaginated()
+        ;
         $data['manufacturer_list'] = $this->model_catalog_manufacturer->getManufacturers(array());
 
         if (isset($this->request->get['filter_name'])) {

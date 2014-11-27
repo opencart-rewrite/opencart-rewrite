@@ -416,7 +416,6 @@ class ControllerDesignLayout extends Controller {
 
         $this->load->model('setting/store');
         $this->load->model('catalog/product');
-        $this->load->model('catalog/category');
         $this->load->model('catalog/information');
 
         foreach ($this->request->post['selected'] as $layout_id) {
@@ -436,7 +435,11 @@ class ControllerDesignLayout extends Controller {
                 $this->error['warning'] = sprintf($this->language->get('error_product'), $product_total);
             }
 
-            $category_total = $this->model_catalog_category->getTotalCategoriesByLayoutId($layout_id);
+            $category_total = $this->em
+                ->getRepository('Entity\Category')
+                ->countByLayoutId($layoutId)
+            ;
+
 
             if ($category_total) {
                 $this->error['warning'] = sprintf($this->language->get('error_category'), $category_total);
