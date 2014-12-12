@@ -1,4 +1,7 @@
 <?php
+
+require_once "RequestData.php";
+
 class Request {
     public $get = array();
     public $post = array();
@@ -7,8 +10,8 @@ class Request {
     public $server = array();
 
     public function __construct() {
-        $this->get = $this->clean($_GET);
-        $this->post = $this->clean($_POST);
+        $this->get = new RequestData($this->clean($_GET));
+        $this->post = new RequestData($this->clean($_POST));
         $this->request = $this->clean($_REQUEST);
         $this->cookie = $this->clean($_COOKIE);
         $this->files = $this->clean($_FILES);
