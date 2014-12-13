@@ -28,7 +28,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @category Entity
  * @package  Opencart
- * @author   Pierre GUILLEMOT <pierreguilemot@yahoo.fr>
+ * @author Allan SIMON <allan.simon@supinfo.com>
  * @license  http:/www.gnu.org/copyleft/gpl.html GPLv3
  * @link     http: //github.com/opencart-rewrite
  */
