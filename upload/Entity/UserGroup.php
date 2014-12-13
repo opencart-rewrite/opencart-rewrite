@@ -32,7 +32,7 @@ class UserGroup
     /**
      * Note: we ue array and not json array to keep compatibility
      * with existing database
-     * @Column(type="array")
+     * @Column(type="json_array")
      *
      */
     protected $permission;
